@@ -428,14 +428,102 @@ function showToast(message, isGood) {
 }
 
 // ── Markets ──────────────────────────────────────────────────────────────────
-const MARKETS = [
-  { id:0, question:"Will ETH be above $4000 by end of this week?", asset:"ETH", targetPrice:4000, yesPool:2.4, noPool:3.8, closes:"2d 14h" },
-  { id:1, question:"Will BTC reach $100k this month?", asset:"BTC", targetPrice:100000, yesPool:5.1, noPool:2.9, closes:"6d 3h" },
-  { id:2, question:"Will ETH drop below $2500 this week?", asset:"ETH", targetPrice:2500, yesPool:0.8, noPool:6.2, closes:"3d 22h" }
-];
-
+let MARKETS = [];
 let selectedMarket = null;
 let currentFilter = 'all';
+
+// Fallback markets if Polymarket API fails
+const FALLBACK_MARKETS = [
+  { id:0, question:"Will ETH be above $2,500 by end of this week?", asset:"ETH", targetPrice:2500, yesPool:3.2, noPool:2.1, closes:"4d 12h", polyId:null },
+  { id:1, question:"Will BTC hold above $70,000 through end of March?", asset:"BTC", targetPrice:70000, yesPool:4.8, noPool:3.4, closes:"5d 6h", polyId:null },
+  { id:2, question:"Will ETH drop below $2,000 this week?", asset:"ETH", targetPrice:2000, yesPool:1.2, noPool:5.8, closes:"4d 12h", polyId:null },
+  { id:3, question:"Will BTC reach $75,000 before April?", asset:"BTC", targetPrice:75000, yesPool:3.6, noPool:4.2, closes:"5d 6h", polyId:null },
+  { id:4, question:"Will ETH outperform BTC this week?", asset:"ETH", targetPrice:2300, yesPool:2.9, noPool:2.7, closes:"4d 12h", polyId:null },
+  { id:5, question:"Will BTC fall below $65,000 this week?", asset:"BTC", targetPrice:65000, yesPool:1.4, noPool:6.1, closes:"4d 18h", polyId:null }
+];
+
+// Detect asset from question text
+function detectAsset(question) {
+  const q = question.toUpperCase();
+  if (q.includes('BTC') || q.includes('BITCOIN')) return 'BTC';
+  if (q.includes('ETH') || q.includes('ETHEREUM')) return 'ETH';
+  if (q.includes('SOL') || q.includes('SOLANA')) return 'SOL';
+  return 'CRYPTO';
+}
+
+// Format time remaining
+function formatTimeLeft(endDateStr) {
+  if (!endDateStr) return 'Soon';
+  const end = new Date(endDateStr);
+  const now = new Date();
+  const diff = end - now;
+  if (diff <= 0) return 'Ended';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h`;
+  return `${hours}h`;
+}
+
+// Fetch real markets from Polymarket
+async function fetchPolymarkets() {
+  const list = document.getElementById('markets-list');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);font-size:12px">Loading live markets from Polymarket...</div>';
+
+  try {
+    // Polymarket CLOB API — fetch active crypto markets
+    const res = await fetch(
+      'https://clob.polymarket.com/markets?active=true&closed=false&limit=30',
+      { headers: { 'Accept': 'application/json' } }
+    );
+
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+
+    // Filter for crypto-related markets
+    const cryptoKeywords = ['bitcoin','btc','ethereum','eth','crypto','solana','sol','base','defi','coinbase'];
+    const cryptoMarkets = (data.data || data).filter(m => {
+      const q = (m.question || m.title || '').toLowerCase();
+      return cryptoKeywords.some(k => q.includes(k));
+    }).slice(0, 8);
+
+    if (cryptoMarkets.length === 0) throw new Error('No crypto markets found');
+
+    // Map to HedgeX format
+    MARKETS = cryptoMarkets.map((m, i) => {
+      const question = m.question || m.title || 'Unknown market';
+      const asset = detectAsset(question);
+      const tokens = m.tokens || [];
+      const yesToken = tokens.find(t => t.outcome === 'Yes') || tokens[0];
+      const noToken = tokens.find(t => t.outcome === 'No') || tokens[1];
+      const yesPrice = parseFloat(yesToken?.price || 0.5);
+      const totalVol = parseFloat(m.volume || m.volumeNum || 10);
+      const yesPool = +(yesPrice * totalVol / 1000).toFixed(2) || 2.0;
+      const noPool = +((1 - yesPrice) * totalVol / 1000).toFixed(2) || 2.0;
+
+      return {
+        id: i,
+        question,
+        asset,
+        targetPrice: 0,
+        yesPool: Math.max(0.5, yesPool),
+        noPool: Math.max(0.5, noPool),
+        closes: formatTimeLeft(m.endDate || m.end_date),
+        polyId: m.conditionId || m.id,
+        polyUrl: `https://polymarket.com/event/${m.slug || ''}`,
+        volume: m.volume || '0'
+      };
+    });
+
+    renderMarkets();
+    showToast(`✅ Loaded ${MARKETS.length} live markets from Polymarket`, true);
+
+  } catch(err) {
+    console.log('Polymarket API failed, using fallback:', err.message);
+    MARKETS = FALLBACK_MARKETS;
+    renderMarkets();
+    showToast('Using local markets (Polymarket API unavailable)', false);
+  }
+}
 
 function getOdds(m) {
   const total = m.yesPool + m.noPool;
@@ -446,14 +534,24 @@ function getOdds(m) {
 function renderMarkets() {
   const list = document.getElementById('markets-list');
   const filtered = currentFilter === 'all' ? MARKETS : MARKETS.filter(m => m.asset === currentFilter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);font-size:12px">No markets found for this filter.</div>';
+    return;
+  }
+
   list.innerHTML = filtered.map(m => {
     const odds = getOdds(m);
     const total = (m.yesPool + m.noPool).toFixed(2);
     const sel = selectedMarket?.id === m.id ? 'selected' : '';
+    const polyBadge = m.polyId ? `<span style="font-size:9px;background:var(--purple-dim);border:1px solid var(--purple);border-radius:4px;padding:1px 6px;color:var(--purple)">Polymarket</span>` : '';
     return `
     <div class="market-card ${sel}" onclick="selectMarket(${m.id})">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <span class="asset-tag">${m.asset}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="asset-tag">${m.asset}</span>
+          ${polyBadge}
+        </div>
         <span class="timer">${m.closes} left</span>
       </div>
       <div class="market-q">${m.question}</div>
@@ -462,7 +560,7 @@ function renderMarkets() {
         <div class="odds-btn no"><span class="odds-pct">${odds.no}%</span><span class="odds-label">NO</span></div>
       </div>
       <div class="odds-bar"><div class="odds-fill" style="width:${odds.yes}%"></div></div>
-      <div class="market-pool">Pool: <span>Ξ ${total}</span></div>
+      <div class="market-pool">Pool: <span>Ξ ${total}</span>${m.polyId ? ` · <a href="${m.polyUrl}" target="_blank" style="color:var(--purple);font-size:9px">View on Polymarket →</a>` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -553,7 +651,8 @@ function filterMarkets(f, btn) {
   currentFilter = f;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  renderMarkets();
+  if (MARKETS.length > 0) renderMarkets();
+  else fetchPolymarkets();
 }
 
 // ── Hedge Simulator ──────────────────────────────────────────────────────────
@@ -707,7 +806,7 @@ async function autoConnect() {
   }
 }
 
-renderMarkets();
+fetchPolymarkets();
 runSim();
 tickPrices();
 autoConnect();
