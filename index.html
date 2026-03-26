@@ -145,6 +145,7 @@ select.sim-input option{background:var(--panel)}
 .tx-toast.visible{display:block}
 .tx-toast a{color:var(--blue);text-decoration:none}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </head>
 <body>
 <div class="app">
@@ -278,7 +279,18 @@ select.sim-input option{background:var(--panel)}
     <div id="sim-output"></div>
     <div id="hedge-suggestion-area" style="margin-top:16px"></div>
 
-    <div style="margin-top:20px">
+    <!-- Mini hedge chart on Markets page -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--white)">Hedge chart</div>
+        <button onclick="showView('simulator', document.querySelectorAll('.nav-pill')[1])" style="font-size:10px;color:var(--blue);background:transparent;border:none;cursor:pointer;font-family:var(--font-mono)">Full view →</button>
+      </div>
+      <div style="position:relative;width:100%;height:160px">
+        <canvas id="miniHedgeChart"></canvas>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
       <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Simulated Positions</div>
       <div id="positions-list">
         <div class="position-row">
@@ -368,6 +380,74 @@ select.sim-input option{background:var(--panel)}
   </div>
 
   <div id="full-sim-output"></div>
+
+  <!-- LIVE HEDGE CHART -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--white)">Live hedge chart</div>
+        <div style="font-size:11px;color:var(--text2)">See exactly where your hedge kicks in</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="setChartPreset('long-eth')" id="cpbtn-long-eth" style="font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid var(--blue);background:var(--blue-dim);color:var(--blue);cursor:pointer;font-family:var(--font-mono)">Long ETH</button>
+        <button onclick="setChartPreset('short-eth')" id="cpbtn-short-eth" style="font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-mono)">Short ETH</button>
+        <button onclick="setChartPreset('long-btc')" id="cpbtn-long-btc" style="font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-mono)">Long BTC</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Entry price ($)</div>
+        <input type="number" id="hc-entry" value="2176" step="10" oninput="updateHedgeChart()" class="sim-input" style="width:100%"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Position size (Ξ)</div>
+        <input type="number" id="hc-size" value="1" step="0.1" oninput="updateHedgeChart()" class="sim-input" style="width:100%"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Hedge bet (Ξ)</div>
+        <input type="number" id="hc-hedge" value="0.05" step="0.01" oninput="updateHedgeChart()" class="sim-input" style="width:100%"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Hedge target ($)</div>
+        <input type="number" id="hc-target" value="2300" step="10" oninput="updateHedgeChart()" class="sim-input" style="width:100%"/>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px">
+        <div style="font-size:9px;color:var(--text2);text-transform:uppercase;margin-bottom:3px">Break-even</div>
+        <div style="font-size:16px;font-weight:700;color:var(--blue)" id="hc-be">—</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px">
+        <div style="font-size:9px;color:var(--text2);text-transform:uppercase;margin-bottom:3px">Max loss</div>
+        <div style="font-size:16px;font-weight:700;color:var(--red)" id="hc-ml">—</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px">
+        <div style="font-size:9px;color:var(--text2);text-transform:uppercase;margin-bottom:3px">Hedge zone</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green)" id="hc-hz">—</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px">
+        <div style="font-size:9px;color:var(--text2);text-transform:uppercase;margin-bottom:3px">Risk reduction</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green)" id="hc-rr">—</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);margin-bottom:8px">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:2px;background:#378ADD;display:inline-block"></span>Futures only</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:0;border-top:2px dashed #E24B4A;display:inline-block"></span>Hedge bet</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:2.5px;background:#00D97E;display:inline-block"></span>Hedged total</span>
+    </div>
+
+    <div style="position:relative;width:100%;height:280px">
+      <canvas id="hedgeLineChart"></canvas>
+    </div>
+
+    <div style="margin-top:12px;padding:10px 14px;border-left:3px solid var(--green);background:var(--green-dim);border-radius:0 8px 8px 0">
+      <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:2px" id="hc-insight-title">Hedge insight</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6" id="hc-insight-text">Adjust inputs above to see your hedge strategy.</div>
+    </div>
+  </div>
 </div>
 
 <!-- PORTFOLIO VIEW -->
@@ -625,6 +705,7 @@ async function fetchPolymarkets() {
     MARKETS = generateMarkets(ethPrice, btcPrice);
     renderMarkets();
     showToast(`✅ Markets generated from live prices: ETH $${Math.round(ethPrice).toLocaleString()} · BTC $${Math.round(btcPrice).toLocaleString()}`, true);
+    setTimeout(() => updateMiniChart(ethPrice), 200);
 
   } catch(err) {
     console.log('Price fetch failed, using fallback:', err.message);
@@ -936,6 +1017,262 @@ tickPrices();
 autoConnect();
 fullSim();
 
+// ── Mini Hedge Chart (Markets page) ──────────────────────────────────────────
+let miniChart = null;
+
+function updateMiniChart(ethPrice) {
+  const canvas = document.getElementById('miniHedgeChart');
+  if (!canvas) return;
+  const entry  = ethPrice || lastEth || 2176;
+  const size   = 1;
+  const hedge  = 0.05;
+  const target = Math.round(entry * 1.05);
+  const multi  = 1.7;
+  const steps  = 30;
+  const prices = [];
+  for (let i = 0; i <= steps; i++) prices.push(Math.round(entry * 0.80 + (entry * 0.40 / steps) * i));
+
+  const futPnl   = prices.map(p => Math.round((p - entry) * size));
+  const totalPnl = prices.map(p => {
+    const wins = p < target;
+    const hp   = wins ? hedge * multi - hedge : -hedge;
+    return Math.round((p - entry) * size + hp);
+  });
+
+  if (miniChart) miniChart.destroy();
+  miniChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: prices.map(p => '$'+p.toLocaleString()),
+      datasets: [
+        { label:'Futures', data:futPnl, borderColor:'#378ADD', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Hedged',  data:totalPnl, borderColor:'#00D97E', borderWidth:2, pointRadius:0, tension:0.3,
+          fill:{target:'origin', above:'rgba(0,217,126,0.08)', below:'rgba(255,69,96,0.08)'} }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{legend:{display:false}, tooltip:{
+        backgroundColor:'rgba(6,8,16,0.95)',
+        titleColor:'#C8D8F0', bodyColor:'#C8D8F0',
+        borderColor:'rgba(77,142,255,0.3)', borderWidth:1, padding:8,
+        callbacks:{label: ctx => ` ${ctx.dataset.label}: ${ctx.raw>=0?'+':''}$${ctx.raw.toLocaleString()}`}
+      }},
+      scales:{
+        x:{display:false},
+        y:{grid:{color:'rgba(30,45,74,0.5)'}, ticks:{color:'#6B8CAE',font:{size:9}, maxTicksLimit:5,
+           callback: v => (v>=0?'+':'')+v}}
+      }
+    }
+  });
+}
+
+// ── Live Hedge Chart ──────────────────────────────────────────────────────────
+let hedgeChart = null;
+let chartMode = 'long-eth';
+
+function setChartPreset(p) {
+  chartMode = p;
+  const presets = {
+    'long-eth':  {entry:2176,  size:1,   hedge:0.05,  target:2300},
+    'short-eth': {entry:2176,  size:1,   hedge:0.05,  target:2000},
+    'long-btc':  {entry:71274, size:0.1, hedge:0.002, target:75000}
+  };
+  const e = presets[p];
+  document.getElementById('hc-entry').value  = e.entry;
+  document.getElementById('hc-size').value   = e.size;
+  document.getElementById('hc-hedge').value  = e.hedge;
+  document.getElementById('hc-target').value = e.target;
+
+  ['long-eth','short-eth','long-btc'].forEach(k => {
+    const b = document.getElementById('cpbtn-'+k);
+    if (!b) return;
+    if (k === p) {
+      b.style.background = 'var(--blue-dim)';
+      b.style.border = '1px solid var(--blue)';
+      b.style.color = 'var(--blue)';
+    } else {
+      b.style.background = 'transparent';
+      b.style.border = '1px solid var(--border2)';
+      b.style.color = 'var(--text2)';
+    }
+  });
+  updateHedgeChart();
+}
+
+function updateHedgeChart() {
+  const canvas = document.getElementById('hedgeLineChart');
+  if (!canvas) return;
+
+  const entry  = parseFloat(document.getElementById('hc-entry').value)  || 2176;
+  const size   = parseFloat(document.getElementById('hc-size').value)   || 1;
+  const hedge  = parseFloat(document.getElementById('hc-hedge').value)  || 0.05;
+  const target = parseFloat(document.getElementById('hc-target').value) || 2300;
+  const isLong = chartMode !== 'short-eth';
+  const multi  = 1.7;
+  const steps  = 40;
+  const range  = 0.30;
+
+  const prices = [];
+  for (let i = 0; i <= steps; i++) {
+    prices.push(Math.round(entry * (1 - range) + (entry * range * 2 / steps) * i));
+  }
+
+  const futPnl   = prices.map(p => Math.round(isLong ? (p - entry) * size : (entry - p) * size));
+  const hedgePnl = prices.map(p => {
+    const wins = isLong ? p < target : p > target;
+    return +(wins ? hedge * multi - hedge : -hedge).toFixed(3);
+  });
+  const totalPnl = prices.map((_, i) => Math.round(futPnl[i] + hedgePnl[i]));
+
+  // Stats
+  let be = null;
+  for (let i = 1; i < totalPnl.length; i++) {
+    if (totalPnl[i-1] * totalPnl[i] <= 0) {
+      be = Math.round(prices[i-1] + (prices[i] - prices[i-1]) * Math.abs(totalPnl[i-1]) / (Math.abs(totalPnl[i-1]) + Math.abs(totalPnl[i])));
+      break;
+    }
+  }
+  const maxLoss      = Math.min(...totalPnl);
+  const maxLossNoHdg = Math.min(...futPnl);
+  const riskRed      = maxLossNoHdg < 0 ? Math.min(100, Math.round((maxLossNoHdg - maxLoss) / Math.abs(maxLossNoHdg) * 100)) : 0;
+
+  document.getElementById('hc-be').textContent  = be ? '$'+be.toLocaleString() : 'N/A';
+  document.getElementById('hc-ml').textContent  = '$'+maxLoss.toLocaleString();
+  document.getElementById('hc-hz').textContent  = (isLong ? 'Below' : 'Above') + ' $' + target.toLocaleString();
+  document.getElementById('hc-rr').textContent  = riskRed + '%';
+
+  document.getElementById('hc-insight-title').textContent = isLong ? 'Long + NO hedge strategy' : 'Short + YES hedge strategy';
+  document.getElementById('hc-insight-text').textContent  = isLong
+    ? `Your long profits above $${entry.toLocaleString()}. Your NO hedge pays off below $${target.toLocaleString()}, protecting you if price drops. The green line is your real net position.`
+    : `Your short profits below $${entry.toLocaleString()}. Your YES hedge pays off above $${target.toLocaleString()}, protecting you if price rises. The green line is your real net position.`;
+
+  const targetIdx = prices.findIndex(p => isLong ? p >= target : p <= target);
+
+  const zeroPlugin = {
+    id:'zeroLine',
+    beforeDraw(chart) {
+      const {ctx, scales:{x,y}} = chart;
+      const z = y.getPixelForValue(0);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(200,216,240,0.15)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(x.left, z); ctx.lineTo(x.right, z); ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  const hedgeBandPlugin = {
+    id:'hedgeBand',
+    beforeDraw(chart) {
+      if (targetIdx < 0) return;
+      const {ctx, scales:{x,y}} = chart;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,217,126,0.06)';
+      const x1 = isLong ? x.left : x.getPixelForValue(targetIdx);
+      const x2 = isLong ? x.getPixelForValue(targetIdx) : x.right;
+      ctx.fillRect(x1, y.top, x2-x1, y.bottom-y.top);
+      ctx.restore();
+    }
+  };
+
+  const entryPlugin = {
+    id:'entryLine',
+    beforeDraw(chart) {
+      const {ctx, scales:{x,y}} = chart;
+      const ei = prices.findIndex(p => p >= entry);
+      if (ei < 0) return;
+      const xp = x.getPixelForValue(ei);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(77,142,255,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(xp, y.top); ctx.lineTo(xp, y.bottom); ctx.stroke();
+      ctx.fillStyle = 'rgba(77,142,255,0.8)';
+      ctx.font = '10px monospace';
+      ctx.fillText('Entry $'+entry.toLocaleString(), xp+4, y.top+14);
+      ctx.restore();
+    }
+  };
+
+  if (hedgeChart) hedgeChart.destroy();
+  hedgeChart = new Chart(canvas, {
+    type: 'line',
+    plugins: [zeroPlugin, hedgeBandPlugin, entryPlugin],
+    data: {
+      labels: prices.map(p => '$'+p.toLocaleString()),
+      datasets: [
+        {
+          label: 'Futures only',
+          data: futPnl,
+          borderColor: '#378ADD',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false
+        },
+        {
+          label: 'Hedge bet',
+          data: hedgePnl,
+          borderColor: '#FF4560',
+          borderWidth: 1,
+          borderDash: [5,4],
+          pointRadius: 0,
+          tension: 0,
+          fill: false
+        },
+        {
+          label: 'Hedged total',
+          data: totalPnl,
+          borderColor: '#00D97E',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: {target:'origin', above:'rgba(0,217,126,0.07)', below:'rgba(255,69,96,0.07)'}
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {mode:'index', intersect:false},
+      plugins: {
+        legend: {display:false},
+        tooltip: {
+          backgroundColor: 'rgba(6,8,16,0.95)',
+          titleColor: '#C8D8F0',
+          bodyColor: '#C8D8F0',
+          borderColor: 'rgba(77,142,255,0.3)',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: ctx => {
+              const sign = ctx.raw >= 0 ? '+' : '';
+              return ` ${ctx.dataset.label}: ${sign}$${ctx.raw.toLocaleString()}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {color:'rgba(30,45,74,0.8)'},
+          ticks: {color:'#6B8CAE', font:{size:10}, maxTicksLimit:8, autoSkip:true}
+        },
+        y: {
+          grid: {color:'rgba(30,45,74,0.8)'},
+          ticks: {
+            color: '#6B8CAE',
+            font: {size:10},
+            callback: v => (v>=0?'+':'')+v.toLocaleString()
+          }
+        }
+      }
+    }
+  });
+}
+
 // ── View switching ────────────────────────────────────────────────────────────
 function showView(view, btn) {
   // Update nav pills
@@ -951,7 +1288,7 @@ function showView(view, btn) {
   simView.style.display  = view === 'simulator' ? 'block' : 'none';
   portView.style.display = view === 'portfolio' ? 'block' : 'none';
 
-  if (view === 'simulator') fullSim();
+  if (view === 'simulator') { fullSim(); setTimeout(updateHedgeChart, 100); }
   if (view === 'portfolio') renderPortfolio();
 }
 
