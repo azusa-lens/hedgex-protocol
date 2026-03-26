@@ -152,9 +152,9 @@ select.sim-input option{background:var(--panel)}
 <header>
   <div class="logo">Hedge<span>X</span></div>
   <div class="nav-pills">
-    <button class="nav-pill active">Markets</button>
-    <button class="nav-pill">Simulator</button>
-    <button class="nav-pill">Portfolio</button>
+    <button class="nav-pill active" onclick="showView('markets',this)">Markets</button>
+    <button class="nav-pill" onclick="showView('simulator',this)">Simulator</button>
+    <button class="nav-pill" onclick="showView('portfolio',this)">Portfolio</button>
   </div>
   <div class="wallet-section">
     <div class="chain-badge" id="chain-badge" style="display:none">
@@ -296,6 +296,86 @@ select.sim-input option{background:var(--panel)}
   </div>
 
 </div>
+</div>
+
+<!-- SIMULATOR VIEW -->
+<div id="view-simulator" style="display:none;padding:24px;max-width:900px;margin:0 auto">
+  <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px">Hedge Simulator</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:24px">Simulate how a prediction bet hedges your futures position across price scenarios</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em">Your Futures Position</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Direction</div>
+          <select id="fs-dir" class="sim-input" style="width:100%" onchange="fullSim()">
+            <option value="long-eth">LONG ETH</option>
+            <option value="short-eth">SHORT ETH</option>
+            <option value="long-btc">LONG BTC</option>
+            <option value="short-btc">SHORT BTC</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Size (Ξ)</div>
+          <input id="fs-size" class="sim-input" style="width:100%" type="number" value="1" step="0.1" oninput="fullSim()"/>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Entry Price ($)</div>
+          <input id="fs-entry" class="sim-input" style="width:100%" type="number" value="2176" oninput="fullSim()"/>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Leverage</div>
+          <select id="fs-lev" class="sim-input" style="width:100%" onchange="fullSim()">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="5">5x</option>
+            <option value="10">10x</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em">Your Hedge Bet</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Bet Side</div>
+          <select id="fs-side" class="sim-input" style="width:100%" onchange="fullSim()">
+            <option value="no">NO (bearish hedge)</option>
+            <option value="yes">YES (bullish hedge)</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Bet Size (Ξ)</div>
+          <input id="fs-hedge" class="sim-input" style="width:100%" type="number" value="0.05" step="0.01" oninput="fullSim()"/>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Target Price ($)</div>
+          <input id="fs-target" class="sim-input" style="width:100%" type="number" value="2500" oninput="fullSim()"/>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Payout Multiplier</div>
+          <select id="fs-multi" class="sim-input" style="width:100%" onchange="fullSim()">
+            <option value="1.6">1.6x (40% odds)</option>
+            <option value="1.9">1.9x (50% odds)</option>
+            <option value="2.5">2.5x (30% odds)</option>
+            <option value="4">4x (20% odds)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="full-sim-output"></div>
+</div>
+
+<!-- PORTFOLIO VIEW -->
+<div id="view-portfolio" style="display:none;padding:24px;max-width:900px;margin:0 auto">
+  <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px">Portfolio</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:24px">Your positions, bets, and performance</div>
+
+  <div id="portfolio-content"></div>
 </div>
 
 <!-- TX Toast -->
@@ -664,6 +744,7 @@ async function placeBet(isYes) {
     });
 
     showToast(`✅ Bet placed! <a href="https://basescan.org/tx/${txHash}" target="_blank">View on BaseScan →</a>`, true);
+    saveBet(selectedMarket, isYes, amount, txHash);
 
     // Update local pool
     if (isYes) selectedMarket.yesPool += amount;
@@ -853,6 +934,213 @@ fetchPolymarkets();
 runSim();
 tickPrices();
 autoConnect();
+fullSim();
+
+// ── View switching ────────────────────────────────────────────────────────────
+function showView(view, btn) {
+  // Update nav pills
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show/hide views
+  const mainGrid = document.querySelector('.main-grid');
+  const simView  = document.getElementById('view-simulator');
+  const portView = document.getElementById('view-portfolio');
+
+  mainGrid.style.display = view === 'markets' ? 'grid' : 'none';
+  simView.style.display  = view === 'simulator' ? 'block' : 'none';
+  portView.style.display = view === 'portfolio' ? 'block' : 'none';
+
+  if (view === 'simulator') fullSim();
+  if (view === 'portfolio') renderPortfolio();
+}
+
+// ── Full Simulator ────────────────────────────────────────────────────────────
+function fullSim() {
+  const dir    = document.getElementById('fs-dir')?.value || 'long-eth';
+  const size   = parseFloat(document.getElementById('fs-size')?.value) || 1;
+  const entry  = parseFloat(document.getElementById('fs-entry')?.value) || 2176;
+  const lev    = parseFloat(document.getElementById('fs-lev')?.value) || 1;
+  const hedge  = parseFloat(document.getElementById('fs-hedge')?.value) || 0.05;
+  const target = parseFloat(document.getElementById('fs-target')?.value) || 2500;
+  const multi  = parseFloat(document.getElementById('fs-multi')?.value) || 1.6;
+  const side   = document.getElementById('fs-side')?.value || 'no';
+  const out    = document.getElementById('full-sim-output');
+  if (!out) return;
+
+  const isLong  = dir.startsWith('long');
+  const isBtc   = dir.includes('btc');
+  const current = isBtc ? lastBtc || 71274 : lastEth || 2176;
+
+  const scenarios = [
+    { label:'-30%', pct:-0.30 }, { label:'-20%', pct:-0.20 },
+    { label:'-10%', pct:-0.10 }, { label:'-5%',  pct:-0.05 },
+    { label:'Flat', pct:0      }, { label:'+5%',  pct:0.05  },
+    { label:'+10%', pct:0.10  }, { label:'+20%', pct:0.20  },
+    { label:'+30%', pct:0.30  },
+  ];
+
+  const results = scenarios.map(s => {
+    const price    = current * (1 + s.pct);
+    const rawPnl   = isLong ? (price - entry) * size : (entry - price) * size;
+    const futPnl   = rawPnl * lev;
+    const liq      = isLong ? entry * (1 - 1/lev * 0.9) : entry * (1 + 1/lev * 0.9);
+    const liquidated = lev > 1 && (isLong ? price <= liq : price >= liq);
+    const actualFut  = liquidated ? -size * entry * (1/lev) : futPnl;
+
+    // Hedge pnl
+    const hedgeWins = side === 'no' ? price < target : price > target;
+    const hedgePnl  = hedgeWins ? hedge * multi - hedge : -hedge;
+    const total     = actualFut + hedgePnl;
+
+    return { label:s.label, price:Math.round(price), future:actualFut, hedge:hedgePnl, total, liquidated };
+  });
+
+  const maxAbs = Math.max(...results.map(r => Math.abs(r.total)), 1);
+  const barH   = 100;
+
+  const rows = results.map(r => {
+    const isPos = r.total >= 0;
+    const liqMark = r.liquidated ? '<span style="color:var(--red);font-size:9px"> LIQUIDATED</span>' : '';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 12px;font-size:11px;color:var(--text2)">${r.label}</td>
+      <td style="padding:8px 12px;font-size:11px;color:var(--white)">$${r.price.toLocaleString()}</td>
+      <td style="padding:8px 12px;font-size:11px;color:${r.future>=0?'var(--green)':'var(--red)'}">$${r.future.toFixed(0)}${liqMark}</td>
+      <td style="padding:8px 12px;font-size:11px;color:${r.hedge>=0?'var(--green)':'var(--red)'}">$${r.hedge.toFixed(2)}</td>
+      <td style="padding:8px 12px;font-size:12px;font-weight:700;color:${isPos?'var(--green)':'var(--red)'}">$${r.total.toFixed(0)}</td>
+    </tr>`;
+  }).join('');
+
+  const bars = results.map(r => {
+    const pct  = Math.abs(r.total) / maxAbs;
+    const h    = Math.max(4, pct * barH);
+    const col  = r.total >= 0 ? 'var(--green)' : 'var(--red)';
+    const sign = r.total >= 0 ? '+' : '';
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="font-size:9px;color:${col};font-weight:600">${sign}$${Math.abs(r.total).toFixed(0)}</div>
+      <div style="height:${h}px;width:100%;background:${col};border-radius:3px 3px 0 0"></div>
+      <div style="font-size:9px;color:var(--text2)">${r.label}</div>
+    </div>`;
+  }).join('');
+
+  const worstNo  = Math.min(...results.map(r => r.future));
+  const worstW   = Math.min(...results.map(r => r.total));
+  const riskRed  = worstNo < 0 ? Math.min(100, Math.round((worstNo - worstW) / Math.abs(worstNo) * 100)) : 0;
+  const hedgeCost = (hedge * 100 / (Math.abs(size * entry))).toFixed(2);
+
+  out.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">RISK REDUCTION</div>
+      <div style="font-size:24px;font-weight:700;color:var(--green)">${riskRed}%</div>
+      <div style="font-size:10px;color:var(--text2)">worst case</div>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">HEDGE COST</div>
+      <div style="font-size:24px;font-weight:700;color:var(--amber)">${hedgeCost}%</div>
+      <div style="font-size:10px;color:var(--text2)">of position</div>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">WORST (no hedge)</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red)">$${worstNo.toFixed(0)}</div>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">WORST (hedged)</div>
+      <div style="font-size:24px;font-weight:700;color:${worstW>=0?'var(--green)':'var(--amber)'}">$${worstW.toFixed(0)}</div>
+    </div>
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:10px;color:var(--text2);text-transform:uppercase;margin-bottom:12px">P&L Chart (Futures + Hedge)</div>
+    <div style="display:flex;align-items:flex-end;gap:6px;height:${barH+30}px">${bars}</div>
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="background:var(--bg3)">
+          <th style="padding:10px 12px;font-size:10px;color:var(--text2);text-align:left;font-weight:500">SCENARIO</th>
+          <th style="padding:10px 12px;font-size:10px;color:var(--text2);text-align:left;font-weight:500">PRICE</th>
+          <th style="padding:10px 12px;font-size:10px;color:var(--text2);text-align:left;font-weight:500">FUTURES P&L</th>
+          <th style="padding:10px 12px;font-size:10px;color:var(--text2);text-align:left;font-weight:500">HEDGE P&L</th>
+          <th style="padding:10px 12px;font-size:10px;color:var(--text2);text-align:left;font-weight:500">TOTAL P&L</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ── Portfolio ─────────────────────────────────────────────────────────────────
+let myBets = JSON.parse(localStorage.getItem('hedgex_bets') || '[]');
+
+function saveBet(market, isYes, amount, txHash) {
+  myBets.push({
+    id: Date.now(),
+    question: market.question,
+    asset: market.asset,
+    side: isYes ? 'YES' : 'NO',
+    amount,
+    txHash,
+    time: new Date().toISOString(),
+    status: 'active'
+  });
+  localStorage.setItem('hedgex_bets', JSON.stringify(myBets));
+}
+
+function renderPortfolio() {
+  const el = document.getElementById('portfolio-content');
+  if (!el) return;
+
+  if (!isConnected) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text2)">
+      <div style="font-size:32px;margin-bottom:12px">🔌</div>
+      <div style="font-size:14px;margin-bottom:16px">Connect your wallet to see your portfolio</div>
+      <button onclick="connectWallet()" style="background:var(--blue2);border:1px solid var(--blue);border-radius:8px;padding:10px 20px;color:var(--white);font-family:var(--font-mono);font-size:12px;cursor:pointer">Connect Wallet</button>
+    </div>`;
+    return;
+  }
+
+  const totalBet    = myBets.reduce((s,b) => s + b.amount, 0);
+  const activeBets  = myBets.filter(b => b.status === 'active').length;
+  const short       = walletAddress ? walletAddress.slice(0,6)+'...'+walletAddress.slice(-4) : '';
+
+  el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">WALLET</div>
+      <div style="font-size:14px;font-weight:600;color:var(--green)">${short}</div>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">ACTIVE BETS</div>
+      <div style="font-size:24px;font-weight:700;color:var(--white)">${activeBets}</div>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">TOTAL WAGERED</div>
+      <div style="font-size:24px;font-weight:700;color:var(--white)">Ξ ${totalBet.toFixed(4)}</div>
+    </div>
+  </div>
+
+  ${myBets.length === 0 ? `
+  <div style="text-align:center;padding:60px;color:var(--text2);background:var(--panel);border:1px solid var(--border);border-radius:12px">
+    <div style="font-size:32px;margin-bottom:12px">📭</div>
+    <div style="font-size:14px;margin-bottom:8px">No bets yet</div>
+    <div style="font-size:12px">Go to Markets and place your first prediction bet</div>
+  </div>` : `
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);text-transform:uppercase">Your Bets</div>
+    ${myBets.slice().reverse().map(b => `
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center">
+      <span style="background:${b.side==='YES'?'var(--green-dim)':'var(--red-dim)'};border:1px solid ${b.side==='YES'?'var(--green)':'var(--red)'};color:${b.side==='YES'?'var(--green)':'var(--red)'};border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700">${b.side}</span>
+      <div>
+        <div style="font-size:11px;color:var(--white);margin-bottom:2px">${b.question.slice(0,60)}...</div>
+        <div style="font-size:10px;color:var(--text2)">${new Date(b.time).toLocaleDateString()} · Ξ ${b.amount}</div>
+      </div>
+      <span style="font-size:10px;background:var(--asset-tag,var(--bg3));border:1px solid var(--border2);border-radius:4px;padding:2px 7px;color:var(--blue)">${b.asset}</span>
+      ${b.txHash ? `<a href="https://basescan.org/tx/${b.txHash}" target="_blank" style="font-size:10px;color:var(--blue);text-decoration:none">View →</a>` : '<span style="font-size:10px;color:var(--text3)">Demo</span>'}
+    </div>`).join('')}
+  </div>`}`;
+}
 </script>
 </body>
 </html>
