@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>$HEDGE Airdrop — HedgeX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04080F;--bg2:#080E1A;--bg3:#0C1424;
+  --panel:#0F1929;--border:#182640;--border2:#243854;
+  --blue:#4D8EFF;--blue2:#1A4ECC;
+  --green:#00D97E;--green-dim:#003D23;
+  --amber:#F59E0B;--purple:#A78BFA;
+  --text:#B8D0EC;--text2:#5A7A9A;--white:#EEF4FF;
+  --font:'Syne',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+
+.stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.star{position:absolute;width:1px;height:1px;background:white;border-radius:50%;opacity:0;animation:twinkle var(--d,3s) var(--delay,0s) infinite}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--op,.5)}}
+
+.card{position:relative;z-index:1;background:var(--panel);border:1px solid var(--border2);border-radius:20px;padding:48px 40px;max-width:520px;width:100%;text-align:center}
+
+.logo{font-size:13px;font-family:var(--mono);color:var(--text2);letter-spacing:.1em;margin-bottom:32px;text-transform:uppercase}
+.logo span{color:var(--blue)}
+
+.token-icon{width:80px;height:80px;background:linear-gradient(135deg,var(--blue2),#0A0A2E);border:2px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:28px;font-weight:800;color:var(--blue);font-family:var(--mono)}
+
+h1{font-size:32px;font-weight:800;color:var(--white);margin-bottom:8px;line-height:1.1}
+h1 span{color:var(--green)}
+
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:36px;font-family:var(--mono);line-height:1.6}
+
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:36px}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px 12px}
+.stat-val{font-size:18px;font-weight:700;color:var(--white);font-family:var(--mono)}
+.stat-label{font-size:10px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+.wallet-btn{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:14px 20px;color:var(--white);font-family:var(--mono);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;margin-bottom:16px}
+.wallet-btn:hover{border-color:var(--blue);background:rgba(77,142,255,.08)}
+.wallet-dot{width:8px;height:8px;border-radius:50%;background:var(--text2)}
+
+.claim-area{display:none}
+.claim-area.visible{display:block}
+
+.address-display{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:20px;word-break:break-all}
+.address-display span{color:var(--blue)}
+
+.allocation-card{background:var(--green-dim);border:1px solid var(--green);border-radius:12px;padding:24px;margin-bottom:20px}
+.alloc-amount{font-size:40px;font-weight:800;color:var(--green);font-family:var(--mono);margin-bottom:4px}
+.alloc-label{font-size:12px;color:var(--green);opacity:.7;font-family:var(--mono)}
+.alloc-breakdown{display:flex;gap:16px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+.alloc-item{font-size:11px;color:var(--green);opacity:.8;font-family:var(--mono)}
+.alloc-item strong{opacity:1}
+
+.claim-btn{width:100%;background:var(--green);border:none;border-radius:12px;padding:16px;color:#000;font-family:var(--font);font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.claim-btn:hover{background:#00FF99;transform:translateY(-1px)}
+.claim-btn:disabled{background:var(--border2);color:var(--text2);cursor:not-allowed;transform:none}
+
+.claimed-state{background:rgba(0,217,126,.08);border:1px solid var(--green);border-radius:12px;padding:24px;text-align:center}
+.claimed-state .check{font-size:36px;margin-bottom:8px}
+.claimed-state h3{color:var(--green);font-size:18px;margin-bottom:6px}
+.claimed-state p{font-size:12px;color:var(--text2);font-family:var(--mono)}
+
+.not-eligible{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:20px;font-size:13px;color:var(--amber);font-family:var(--mono)}
+
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+.how-section h3{font-size:14px;color:var(--white);margin-bottom:14px;text-align:left}
+.how-list{text-align:left;display:flex;flex-direction:column;gap:10px}
+.how-item{display:flex;gap:12px;align-items:flex-start;font-size:12px;color:var(--text);font-family:var(--mono);line-height:1.5}
+.how-num{background:var(--blue2);border:1px solid var(--blue);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--blue);min-width:28px;text-align:center;margin-top:1px}
+
+.countdown{font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:16px}
+.countdown span{font-weight:600}
+
+.footer{position:relative;z-index:1;margin-top:20px;font-size:11px;color:var(--text2);font-family:var(--mono);display:flex;gap:20px}
+.footer a{color:var(--text2);text-decoration:none}
+.footer a:hover{color:var(--blue)}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="card">
+  <div class="logo">Hedge<span>X</span> · Base L2</div>
+
+  <div class="token-icon">H</div>
+
+  <h1>Claim your<br><span>$HEDGE</span> airdrop</h1>
+  <p class="subtitle">40,000,000 $HEDGE distributed<br>to early HedgeX users on Base</p>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-val">40M</div>
+      <div class="stat-label">Total drop</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="claimed-count">0</div>
+      <div class="stat-label">Claimed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="days-left">30d</div>
+      <div class="stat-label">Remaining</div>
+    </div>
+  </div>
+
+  <!-- Step 1: Connect wallet -->
+  <div id="connect-area">
+    <button class="wallet-btn" onclick="connectWallet()">
+      <span class="wallet-dot" id="wallet-dot"></span>
+      Connect wallet to check eligibility
+    </button>
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono)">
+      Supports MetaMask, Coinbase Wallet, Rainbow
+    </div>
+  </div>
+
+  <!-- Step 2: Claim area (shown after connect) -->
+  <div class="claim-area" id="claim-area">
+    <div class="address-display">
+      Connected: <span id="display-address">0x...</span>
+    </div>
+
+    <!-- Eligible state -->
+    <div id="eligible-state" style="display:none">
+      <div class="allocation-card">
+        <div class="alloc-amount" id="alloc-amount">0</div>
+        <div class="alloc-label">$HEDGE allocated to your wallet</div>
+        <div class="alloc-breakdown">
+          <span class="alloc-item"><strong id="bet-pts">0</strong> bet pts</span>
+          <span class="alloc-item"><strong id="hedge-pts">0</strong> hedge pts</span>
+          <span class="alloc-item"><strong id="ref-pts">0</strong> referral pts</span>
+        </div>
+      </div>
+      <button class="claim-btn" id="claim-btn" onclick="claimTokens()">
+        Claim $HEDGE →
+      </button>
+    </div>
+
+    <!-- Not eligible state -->
+    <div id="not-eligible-state" style="display:none" class="not-eligible">
+      This wallet is not in the airdrop snapshot.<br><br>
+      Use HedgeX on Base to earn $HEDGE in the next round.
+    </div>
+
+    <!-- Already claimed state -->
+    <div id="claimed-state" style="display:none" class="claimed-state">
+      <div class="check">✓</div>
+      <h3>Already claimed!</h3>
+      <p id="claimed-amount-text">Your $HEDGE has been sent to your wallet.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="how-section">
+    <h3>How to earn $HEDGE</h3>
+    <div class="how-list">
+      <div class="how-item">
+        <span class="how-num">1</span>
+        Place bets on HedgeX prediction markets → 50 pts per 0.01 ETH
+      </div>
+      <div class="how-item">
+        <span class="how-num">2</span>
+        Use the hedge engine to pair a bet with a position → 200 pts bonus
+      </div>
+      <div class="how-item">
+        <span class="how-num">3</span>
+        Refer friends → 500 pts per referral who bets
+      </div>
+      <div class="how-item">
+        <span class="how-num">4</span>
+        Daily login streak → 25 pts/day, 5x multiplier at 30 days
+      </div>
+    </div>
+  </div>
+
+  <div class="countdown">
+    Claim window closes in <span id="countdown-text">29 days 23 hours</span>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="#">Docs</a>
+  <a href="#">GitHub</a>
+  <a href="#">Base Scan</a>
+  <a href="#">Discord</a>
+</div>
+
+<script>
+// Generate stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;--op:${0.2+Math.random()*0.6}`;
+  starsEl.appendChild(s);
+}
+
+// Mock eligibility data (replace with real merkle proof API call)
+const MOCK_ELIGIBLE = {
+  "0xDEMO": { amount: 12500, betPts: 3200, hedgePts: 8000, refPts: 1300, claimed: false },
+};
+
+let connectedAddress = null;
+
+async function connectWallet() {
+  // In production: use wagmi/ethers to connect
+  // This demo simulates the flow
+  const mockAddr = "0xDEMO...a4f2";
+  connectedAddress = mockAddr;
+
+  document.getElementById('wallet-dot').style.background = 'var(--green)';
+  document.getElementById('display-address').textContent = mockAddr;
+  document.getElementById('connect-area').style.display = 'none';
+  document.getElementById('claim-area').classList.add('visible');
+
+  // Check eligibility (mock)
+  await checkEligibility(mockAddr);
+}
+
+async function checkEligibility(address) {
+  // In production: fetch merkle proof from your API
+  // GET /api/proof?address=0x...
+  // Returns: { eligible: bool, amount: string, proof: string[] }
+
+  // Demo: show eligible state
+  const data = { eligible: true, amount: 12500, betPts: 3200, hedgePts: 8000, refPts: 1300, claimed: false };
+
+  if (!data.eligible) {
+    document.getElementById('not-eligible-state').style.display = 'block';
+    return;
+  }
+  if (data.claimed) {
+    document.getElementById('claimed-state').style.display = 'block';
+    document.getElementById('claimed-amount-text').textContent = `${data.amount.toLocaleString()} $HEDGE sent to your wallet.`;
+    return;
+  }
+
+  document.getElementById('eligible-state').style.display = 'block';
+  document.getElementById('alloc-amount').textContent = data.amount.toLocaleString();
+  document.getElementById('bet-pts').textContent = data.betPts.toLocaleString();
+  document.getElementById('hedge-pts').textContent = data.hedgePts.toLocaleString();
+  document.getElementById('ref-pts').textContent = data.refPts.toLocaleString();
+
+  // Animate counter
+  animateCounter('claimed-count', 0, 14832, 1200);
+}
+
+async function claimTokens() {
+  const btn = document.getElementById('claim-btn');
+  btn.disabled = true;
+  btn.textContent = 'Claiming...';
+
+  // In production:
+  // 1. Fetch merkle proof from API
+  // 2. Call airdropContract.claim(amount, proof) via wagmi
+  // 3. Wait for tx confirmation
+
+  await new Promise(r => setTimeout(r, 2000)); // Simulate tx
+
+  document.getElementById('eligible-state').style.display = 'none';
+  document.getElementById('claimed-state').style.display = 'block';
+  document.getElementById('claimed-amount-text').textContent = '12,500 $HEDGE sent to your wallet.';
+}
+
+function animateCounter(id, from, to, duration) {
+  const el = document.getElementById(id);
+  const start = Date.now();
+  const tick = () => {
+    const progress = Math.min((Date.now() - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(from + (to - from) * ease).toLocaleString();
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// Countdown
+function updateCountdown() {
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + 30);
+  const diff = deadline - new Date();
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  document.getElementById('countdown-text').textContent = `${days} days ${hours} hours`;
+  document.getElementById('days-left').textContent = `${days}d`;
+}
+updateCountdown();
+setInterval(updateCountdown, 60000);
+animateCounter('claimed-count', 0, 14832, 2000);
+</script>
+</body>
+</html>
