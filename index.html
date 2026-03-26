@@ -479,11 +479,17 @@ async function fetchPolymarkets() {
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
 
-    // Filter for crypto-related markets
-    const cryptoKeywords = ['bitcoin','btc','ethereum','eth','crypto','solana','sol','base','defi','coinbase'];
+    // Filter strictly for BTC/ETH price prediction markets only
+    const strictKeywords = ['bitcoin price','btc price','ethereum price','eth price',
+      'will btc','will eth','will bitcoin','will ethereum',
+      'btc above','btc below','eth above','eth below',
+      'bitcoin above','bitcoin below','ethereum above','ethereum below',
+      'btc reach','eth reach','bitcoin reach','ethereum reach',
+      'btc hit','eth hit','bitcoin hit','ethereum hit',
+      'btc end','eth end','btc by','eth by'];
     const cryptoMarkets = (data.data || data).filter(m => {
       const q = (m.question || m.title || '').toLowerCase();
-      return cryptoKeywords.some(k => q.includes(k));
+      return strictKeywords.some(k => q.includes(k));
     }).slice(0, 8);
 
     if (cryptoMarkets.length === 0) throw new Error('No crypto markets found');
