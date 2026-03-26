@@ -196,19 +196,7 @@ select.sim-input option{background:var(--panel)}
           </div>
         </div>
 
-        <!-- Deposit + Withdraw buttons -->
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
-          <div style="font-size:9px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Custodial balance</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-            <button onclick="openDeposit()" style="padding:8px;background:var(--green-dim);border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
-              + Deposit
-            </button>
-            <button onclick="openWithdraw()" style="padding:8px;background:var(--blue-dim);border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
-              ↓ Withdraw
-            </button>
-          </div>
-          <div style="font-size:9px;color:var(--text3);line-height:1.4">Deposit to trade gasless · or use Non-custodial mode to trade directly from your wallet</div>
-        </div>
+
 
         <!-- Actions -->
         <button onclick="copyAddress()" style="width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:var(--font-mono);font-size:11px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px">
@@ -663,6 +651,45 @@ select.sim-input option{background:var(--panel)}
   <div id="portfolio-content"></div>
 </div>
 
+<!-- MODE SELECTION MODAL -->
+<div id="mode-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--panel);border:1px solid var(--border2);border-radius:20px;padding:32px;width:420px;max-width:95vw">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--white);margin-bottom:6px">Choose trading mode</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6">How do you want to use HedgeX?<br>You can change this anytime in the bet panel.</div>
+    </div>
+    <div onclick="selectModeAndClose('custodial')" style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--green)';this.style.background='var(--green-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;background:var(--green-dim);border:1px solid var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚡</div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px">Custodial — Gasless trading</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6">Deposit ETH once. Place unlimited bets with zero gas fees. Withdraw back to your wallet anytime.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+        <span style="font-size:9px;background:var(--green-dim);border:1px solid var(--green);color:var(--green);padding:2px 8px;border-radius:4px">No gas per bet</span>
+        <span style="font-size:9px;background:var(--green-dim);border:1px solid var(--green);color:var(--green);padding:2px 8px;border-radius:4px">Earn more points</span>
+        <span style="font-size:9px;background:var(--green-dim);border:1px solid var(--green);color:var(--green);padding:2px 8px;border-radius:4px">Best for testnet farming</span>
+      </div>
+    </div>
+    <div onclick="selectModeAndClose('noncustodial')" style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--blue)';this.style.background='var(--blue-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;background:var(--blue-dim);border:1px solid var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔗</div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px">Non-custodial — Self-custody</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6">Use your own wallet for every bet. No deposits needed. Each bet is a direct on-chain transaction you sign.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+        <span style="font-size:9px;background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue);padding:2px 8px;border-radius:4px">Full self-custody</span>
+        <span style="font-size:9px;background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue);padding:2px 8px;border-radius:4px">No deposit needed</span>
+        <span style="font-size:9px;background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue);padding:2px 8px;border-radius:4px">On-chain proof</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--text3)">You can switch modes anytime in the bet panel</div>
+  </div>
+</div>
+
 <!-- TX Toast -->
 <div class="tx-toast" id="tx-toast"></div>
 
@@ -680,6 +707,16 @@ const BASE_SEPOLIA_CHAIN_ID = "0x14a34";
 // 'custodial'     = deposit to HedgeX, gasless bets, withdraw request
 // 'noncustodial'  = direct MetaMask tx per bet, self-custody
 let tradingMode = localStorage.getItem('hedgex_mode') || 'custodial';
+
+function selectModeAndClose(mode) {
+  setTradingMode(mode);
+  document.getElementById('mode-modal').style.display = 'none';
+  if (mode === 'custodial') {
+    setTimeout(() => openDeposit(), 400);
+  } else {
+    showToast('🔗 Non-custodial — your wallet signs each bet', true);
+  }
+}
 
 function setTradingMode(mode) {
   tradingMode = mode;
@@ -852,6 +889,7 @@ function updatePointsUI() {
 // ── Wallet state ─────────────────────────────────────────────────────────────
 let walletAddress = null;
 let isConnected = false;
+let lastEth = 0, lastBtc = 0;
 
 async function connectWallet() {
   if (typeof window.ethereum === 'undefined') {
@@ -872,6 +910,12 @@ async function connectWallet() {
     updateWalletUI();
     const badge = document.getElementById('points-badge');
     if (badge) badge.style.display = 'block';
+    if (!localStorage.getItem('hedgex_mode')) {
+      setTimeout(() => {
+        const m = document.getElementById('mode-modal');
+        if (m) m.style.display = 'flex';
+      }, 600);
+    }
     setTimeout(() => {
       const p = getMyPoints();
       if (p && p.points === 0) awardPoints('First wallet connect!', POINTS.CONNECT_WALLET);
@@ -1764,7 +1808,6 @@ function autoHedge() {
 }
 
 // Live prices from CoinGecko API
-let lastEth = 0, lastBtc = 0;
 
 async function fetchPrices() {
   const ethEl = document.getElementById('eth-price');
@@ -1844,6 +1887,12 @@ setTimeout(() => {
   if (walletAddress) {
     const badge = document.getElementById('points-badge');
     if (badge) badge.style.display = 'block';
+    if (!localStorage.getItem('hedgex_mode')) {
+      setTimeout(() => {
+        const m = document.getElementById('mode-modal');
+        if (m) m.style.display = 'flex';
+      }, 600);
+    }
     updatePointsUI();
   }
 }, 1000);
