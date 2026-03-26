@@ -1,18 +1,19 @@
 # HedgeX — Predict & Hedge on Base
 
-> The first prediction market on Base with a built-in hedging engine.
+> The first prediction market with a built-in hedging engine — live on Base, Arbitrum, and Optimism.
 > Bet YES/NO on crypto outcomes. Hedge your positions. Trade gasless or on-chain.
 
 [![Live App](https://img.shields.io/badge/Live%20App-hedgex--protocol.vercel.app-4D8EFF?style=flat-square)](https://hedgex-protocol.vercel.app)
 [![Base Mainnet](https://img.shields.io/badge/Base-Mainnet-0052FF?style=flat-square)](https://basescan.org/address/0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd)
+[![Arbitrum](https://img.shields.io/badge/Arbitrum-Mainnet-28A0F0?style=flat-square)](https://arbiscan.io)
+[![Optimism](https://img.shields.io/badge/Optimism-Mainnet-FF0420?style=flat-square)](https://optimistic.etherscan.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-00D97E?style=flat-square)](LICENSE)
-[![Open Source](https://img.shields.io/badge/Open%20Source-Yes-00D97E?style=flat-square)](https://github.com/azusa-lens/hedgex-protocol)
 
 ---
 
 ## What is HedgeX?
 
-HedgeX combines **prediction markets** and **portfolio hedging** into one platform — built exclusively on Base L2.
+HedgeX combines **prediction markets** and **portfolio hedging** into one platform — deployed across Base, Arbitrum, and Optimism.
 
 Most prediction markets are pure gambling. HedgeX is different: every prediction position can serve as a financial hedge against your existing crypto exposure.
 
@@ -27,49 +28,68 @@ Most prediction markets are pure gambling. HedgeX is different: every prediction
 
 | Feature | Status |
 |---|---|
-| Binary prediction markets (YES/NO) | ✅ Live on Base Mainnet |
+| Binary prediction markets (YES/NO) | ✅ Live |
 | Live ETH/BTC price markets (5m → Monthly) | ✅ Live |
 | Hedge engine with P&L simulator | ✅ Live |
 | Live hedge chart (futures + hedge line) | ✅ Live |
 | Wallet connect (MetaMask) | ✅ Live |
-| Custodial mode (gasless trading) | ✅ Live |
-| Non-custodial mode (self-custody) | ✅ Live |
+| Custodial mode — gasless trading | ✅ Live |
+| Non-custodial mode — self-custody | ✅ Live |
 | Points system + leaderboard | ✅ Live |
-| $HEDGE airdrop for early users | 🔜 Coming |
+| Multi-chain (Base, Arbitrum, Optimism) | ✅ Live |
+| $HEDGE token launch | 🔜 Coming soon |
+| $HEDGE airdrop for early users | 🔜 Coming soon |
 | Chainlink oracle auto-resolution | 🔜 Phase 2 |
 | Perpetual futures integration | 🔜 Phase 2 |
 
 ---
 
-## Live Contracts
+## Live Deployments
 
-| Network | Contract | Address |
-|---|---|---|
-| Base Mainnet | PredictionMarket | [`0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd`](https://basescan.org/address/0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd) |
-| Base Sepolia | PredictionMarket | [`0x26c467f66D8172eAfeb7C9C2d7A5f271Ab1ec889`](https://sepolia.basescan.org/address/0x26c467f66D8172eAfeb7C9C2d7A5f271Ab1ec889) |
+HedgeX is deployed on three EVM networks. Contracts are verified and live.
+
+| Network | Status |
+|---|---|
+| Base Mainnet | ✅ Live |
+| Arbitrum Mainnet | ✅ Live |
+| Optimism Mainnet | ✅ Live |
+| Base Sepolia Testnet | ✅ Live — earn points here |
 
 ---
 
 ## Trading Modes
 
 ### ⚡ Custodial — Gasless
-Deposit ETH once to HedgeX. Place unlimited bets with zero gas fees per trade. Withdraw back to your wallet anytime.
+Deposit ETH once to HedgeX. Place unlimited bets with zero gas fees per trade. Withdraw back to your wallet anytime. Best for active traders and testnet point farming.
 
 ### 🔗 Non-Custodial — Self-Custody
-Connect your wallet and trade directly on-chain. Each bet is a MetaMask transaction. Full self-custody, no deposits needed.
+Connect your wallet and trade directly on-chain. Each bet is a MetaMask transaction you sign. Full self-custody, no deposits needed.
 
 ---
 
-## $HEDGE Token & Airdrop
+## $HEDGE Token
 
-**100,000,000 $HEDGE** total supply. **40% allocated to community airdrop.**
+> **$HEDGE token launch is coming soon — could go live at any time.**
 
-Earn points now → receive $HEDGE at launch.
+The $HEDGE token is the governance and utility token of HedgeX. It is currently in final preparation.
+
+**Total supply: 100,000,000 $HEDGE — fixed forever. No inflation.**
+
+| Allocation | % | Purpose |
+|---|---|---|
+| Community airdrop | 40% | Early users who earned points |
+| Liquidity pool | 20% | Uniswap V3 on Base |
+| Team & contributors | 15% | 1-year cliff, 2-year vest |
+| Ecosystem grants | 15% | Community proposals |
+| Reserve | 10% | DAO treasury |
+
+### Earn $HEDGE now — points farm is live
 
 | Action | Points |
 |---|---|
 | First bet | +500 pts |
 | Each bet placed | +100 pts |
+| Per 0.01 ETH wagered | +50 pts |
 | Use hedge engine | +200 pts |
 | Daily login | +25 pts |
 | 7-day streak | +200 pts |
@@ -79,13 +99,28 @@ Earn points now → receive $HEDGE at launch.
 
 **Levels:** Rookie → Trader → Pro → Whale → Legend
 
+Points snapshot taken before token launch. Top users receive the largest $HEDGE allocation.
+
+---
+
+## Grants
+
+HedgeX has applied for grants from:
+
+- [Base Grants](https://paragraph.com/@grants.base.eth)
+- [Gitcoin Grants](https://gitcoin.co)
+- [Optimism RetroPGF](https://retrofunding.optimism.io)
+- [Arbitrum Grants](https://arbitrum.foundation/grants)
+
+> If grants are received, 100% of funds will be directed toward protocol development — including smart contract security audits, Chainlink oracle integration, frontend improvements, and community growth. No funds will be used for personal purposes.
+
 ---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Blockchain | Base L2 (Ethereum, OP Stack) |
+| Blockchain | Base, Arbitrum, Optimism (EVM) |
 | Smart contracts | Solidity 0.8.20 + OpenZeppelin |
 | Dev tooling | Hardhat v2 |
 | Frontend | Vanilla HTML/CSS/JS |
@@ -105,7 +140,7 @@ hedgex-protocol/
 ├── scripts/
 │   └── deploy.js              ← Deploy + seed markets
 ├── frontend/
-│   ├── index.html             ← Main app (markets, simulator, portfolio, points)
+│   ├── index.html             ← Main app
 │   └── airdrop.html           ← $HEDGE claim page
 ├── docs/
 │   └── HedgeX_Whitepaper_v1.docx
@@ -117,13 +152,6 @@ hedgex-protocol/
 ---
 
 ## Local Development
-
-### Prerequisites
-- Node.js v18+
-- MetaMask wallet
-- Base Sepolia ETH (free from faucet)
-
-### Setup
 
 ```bash
 # Clone
@@ -137,67 +165,52 @@ npm install --legacy-peer-deps
 cp .env.example .env
 # Add your PRIVATE_KEY to .env
 
-# Compile contracts
+# Compile
 npx hardhat compile
 
 # Deploy to testnet
 npx hardhat run scripts/deploy.js --network base_sepolia
 
-# Open frontend
-open frontend/index.html
-```
-
-### Get Testnet ETH
-→ [Base Sepolia Faucet](https://docs.base.org/base-chain/tools/network-faucets)
-
-### Deploy to Mainnet
-```bash
+# Deploy to mainnet
 npx hardhat run scripts/deploy.js --network base
 ```
+
+**Get free testnet ETH:** [Base Sepolia Faucet](https://docs.base.org/base-chain/tools/network-faucets)
 
 ---
 
 ## Roadmap
 
-### Phase 1 — Live ✅
-- Prediction markets on Base mainnet
-- Hedge simulator with live chart
-- Custodial + non-custodial trading
-- Points system + leaderboard
-- Wallet connect
+### Phase 1 — Complete ✅
+- Prediction markets on Base, Arbitrum, Optimism
+- Hedge simulator with live interactive chart
+- Custodial + non-custodial trading modes
+- Points system + leaderboard + referrals
+- Wallet connect + gasless trading
+- Whitepaper published
 
-### Phase 2 — Q2 2025
+### Phase 2 — Coming Soon 🔜
 - $HEDGE token launch
-- Airdrop claim page
-- Chainlink oracle auto-resolution
+- Community airdrop to point holders
+- Chainlink oracle for auto-resolution
 - Community market creation
 
-### Phase 3 — Q3 2025
+### Phase 3 — If Grants Received 🎯
+- Smart contract security audit
 - Perpetual futures integration
-- Cross-position auto-hedging
-- DAO governance
-- Mobile app
+- Cross-chain auto-hedging
+- DAO governance launch
 
 ---
 
 ## Contributing
 
-HedgeX is fully open source under MIT license. Contributions welcome.
+HedgeX is fully open source under MIT license. All contributions welcome.
 
 1. Fork the repo
 2. Create a branch: `git checkout -b feature/your-feature`
-3. Commit: `git commit -m "Add your feature"`
-4. Push: `git push origin feature/your-feature`
-5. Open a Pull Request
-
----
-
-## Grants & Funding
-
-This project is applying for:
-- [Base Grants](https://paragraph.com/@grants.base.eth)
-- [Gitcoin Grants](https://gitcoin.co)
-- [Optimism RetroPGF](https://retrofunding.optimism.io)
+3. Commit your changes
+4. Push and open a Pull Request
 
 ---
 
@@ -209,7 +222,7 @@ This project is applying for:
 | 🐦 Twitter | [@hedgexprotocol](https://twitter.com/hedgexprotocol) |
 | 💬 Telegram | [t.me/hedgexprotocol](https://t.me/hedgexprotocol) |
 | 📄 Whitepaper | [HedgeX_Whitepaper_v1.docx](docs/HedgeX_Whitepaper_v1.docx) |
-| 🔍 Contract | [BaseScan](https://basescan.org/address/0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd) |
+| 🔍 Base Contract | [BaseScan](https://basescan.org/address/0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd) |
 
 ---
 
@@ -217,4 +230,4 @@ This project is applying for:
 
 MIT — free to use, fork, and deploy.
 
-Built with ❤️ on Base.
+Built with ❤️ on Base, Arbitrum, and Optimism.
