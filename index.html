@@ -22,8 +22,6 @@
   --radius:10px;--radius-lg:16px;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh;overflow-x:hidden}
-
-/* ── Layout ── */
 .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
 header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--white);letter-spacing:-0.5px}
@@ -31,25 +29,30 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24p
 .nav-pills{display:flex;gap:4px}
 .nav-pill{background:transparent;border:1px solid transparent;color:var(--text2);font-family:var(--font-mono);font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s}
 .nav-pill.active,.nav-pill:hover{background:var(--bg3);border-color:var(--border2);color:var(--white)}
+
+/* Wallet button */
+.wallet-section{display:flex;align-items:center;gap:10px}
 .chain-badge{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--blue)}
 .chain-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.connect-btn{background:var(--blue2);border:1px solid var(--blue);border-radius:8px;padding:8px 16px;color:var(--white);font-family:var(--font-mono);font-size:11px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.connect-btn:hover{background:var(--blue);transform:translateY(-1px)}
+.connect-btn.connected{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.wallet-avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:inline-block}
+
+/* Network warning */
+.network-warning{background:var(--amber-dim);border:1px solid var(--amber);border-radius:8px;padding:10px 16px;font-size:11px;color:var(--amber);display:none;align-items:center;gap:8px;margin:12px 24px 0}
+.network-warning.visible{display:flex}
 
 .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 60px)}
 .pane{background:var(--bg2);overflow-y:auto;padding:24px}
 .pane:first-child{border-right:1px solid var(--border)}
-
-/* ── Section headers ── */
 .pane-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .pane-title{font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--white)}
 .pane-subtitle{font-size:10px;color:var(--text2);margin-top:2px}
-
-/* ── Tabs ── */
 .tabs{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:20px}
 .tab{flex:1;background:transparent;border:none;color:var(--text2);font-family:var(--font-mono);font-size:11px;padding:7px;border-radius:6px;cursor:pointer;transition:all .15s}
 .tab.active{background:var(--panel);color:var(--white);border:1px solid var(--border2)}
-
-/* ── Market Cards ── */
 .markets-list{display:flex;flex-direction:column;gap:12px}
 .market-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .market-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:0;transition:opacity .2s}
@@ -72,8 +75,6 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24p
 .market-pool{font-size:10px;color:var(--text2);text-align:center}
 .market-pool span{color:var(--text)}
 .timer{font-size:10px;color:var(--amber)}
-
-/* ── Bet Panel ── */
 .bet-panel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-top:16px}
 .bet-header{font-size:11px;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
 .bet-amount-row{display:flex;gap:8px;margin-bottom:12px}
@@ -88,19 +89,15 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24p
 .bet-btn.yes:hover{background:#00FF99}
 .bet-btn.no{background:var(--red);color:#fff}
 .bet-btn.no:hover{background:#FF6070}
+.bet-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
 .bet-info{display:flex;justify-content:space-between;font-size:10px;color:var(--text2);padding-top:10px;border-top:1px solid var(--border)}
 .bet-info span:last-child{color:var(--white)}
-
-/* ── Hedge Engine ── */
-.hedge-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:12px;color:var(--text3)}
-.hedge-empty .icon{font-size:36px;opacity:.3}
-.hedge-empty p{font-size:12px;text-align:center;max-width:200px;line-height:1.6}
-
+.connect-to-bet{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px;text-align:center;font-size:12px;color:var(--text2);margin-top:8px}
+.connect-to-bet button{background:var(--blue2);border:1px solid var(--blue);border-radius:6px;padding:8px 16px;color:var(--white);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-top:8px;display:block;width:100%}
 .hedge-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
 .hedge-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .hedge-value{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--white)}
 .hedge-sub{font-size:10px;color:var(--text2);margin-top:2px}
-
 .position-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:8px}
 .pos-side{font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px}
 .pos-side.long{background:var(--green-dim);color:var(--green);border:1px solid var(--green)}
@@ -109,35 +106,21 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24p
 .pos-pnl{font-size:12px;font-weight:600}
 .pos-pnl.pos{color:var(--green)}
 .pos-pnl.neg{color:var(--red)}
-
-.scenarios{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
-.scenario{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
-.scenario-label{font-size:9px;color:var(--text2);margin-bottom:4px;text-transform:uppercase}
-.scenario-val{font-size:13px;font-weight:700}
-.scenario-val.pos{color:var(--green)}
-.scenario-val.neg{color:var(--red)}
-.scenario-val.neutral{color:var(--amber)}
-
 .hedge-strength{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:8px 0}
 .hedge-fill{height:100%;border-radius:4px;transition:width .6s ease}
 .hedge-fill.low{background:var(--red)}
 .hedge-fill.med{background:var(--amber)}
 .hedge-fill.high{background:var(--green)}
-
 .suggest-btn{width:100%;background:linear-gradient(135deg,var(--blue2),var(--purple-dim));border:1px solid var(--purple);border-radius:8px;padding:12px;color:var(--white);font-family:var(--font-display);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.03em}
 .suggest-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(77,142,255,.2)}
-
 .hedge-suggestion{background:var(--purple-dim);border:1px solid var(--purple);border-radius:var(--radius);padding:14px;margin-top:12px;font-size:12px;line-height:1.7}
 .hedge-suggestion strong{color:var(--purple)}
-
-/* ── Simulator ── */
 .sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .sim-input-group{display:flex;flex-direction:column;gap:6px}
 .sim-label{font-size:10px;color:var(--text2)}
 .sim-input{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--white);font-family:var(--font-mono);font-size:13px;outline:none}
 .sim-input:focus{border-color:var(--blue)}
 select.sim-input option{background:var(--panel)}
-
 .pnl-chart{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:12px}
 .pnl-title{font-size:10px;color:var(--text2);margin-bottom:12px;text-transform:uppercase}
 .bars{display:flex;align-items:flex-end;gap:6px;height:100px}
@@ -145,9 +128,6 @@ select.sim-input option{background:var(--panel)}
 .bar{width:100%;border-radius:3px 3px 0 0;transition:height .4s ease,background .3s}
 .bar-label{font-size:9px;color:var(--text2);white-space:nowrap}
 .bar-val{font-size:10px;font-weight:600}
-.zero-line{width:100%;height:1px;background:var(--border2)}
-
-/* ── Stats strip ── */
 .stats-strip{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
 .stat{padding:12px 16px;border-right:1px solid var(--border);white-space:nowrap}
 .stat:last-child{border-right:none}
@@ -155,20 +135,15 @@ select.sim-input option{background:var(--panel)}
 .stat-val{font-size:14px;font-weight:600;color:var(--white);margin-top:2px}
 .stat-val.up{color:var(--green)}
 .stat-val.down{color:var(--red)}
-
-/* ── Scrollbar ── */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+@media(max-width:768px){.main-grid{grid-template-columns:1fr;grid-template-rows:auto auto}.pane:first-child{border-right:none;border-bottom:1px solid var(--border)}}
 
-/* ── Mobile ── */
-@media(max-width:768px){
-  .main-grid{grid-template-columns:1fr;grid-template-rows:auto auto}
-  .pane:first-child{border-right:none;border-bottom:1px solid var(--border)}
-}
-
-.blink{animation:blink 1.2s step-end infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+/* Tx notification */
+.tx-toast{position:fixed;bottom:24px;right:24px;background:var(--panel);border:1px solid var(--green);border-radius:12px;padding:14px 18px;font-size:12px;color:var(--green);display:none;z-index:999;max-width:320px}
+.tx-toast.visible{display:block}
+.tx-toast a{color:var(--blue);text-decoration:none}
 </style>
 </head>
 <body>
@@ -177,31 +152,43 @@ select.sim-input option{background:var(--panel)}
 <header>
   <div class="logo">Hedge<span>X</span></div>
   <div class="nav-pills">
-    <button class="nav-pill active" onclick="showView('markets')">Markets</button>
-    <button class="nav-pill" onclick="showView('simulator')">Simulator</button>
-    <button class="nav-pill" onclick="showView('portfolio')">Portfolio</button>
+    <button class="nav-pill active">Markets</button>
+    <button class="nav-pill">Simulator</button>
+    <button class="nav-pill">Portfolio</button>
   </div>
-  <div class="chain-badge">
-    <span class="chain-dot"></span>
-    Base Sepolia
+  <div class="wallet-section">
+    <div class="chain-badge" id="chain-badge" style="display:none">
+      <span class="chain-dot"></span>
+      <span id="chain-name">Base</span>
+    </div>
+    <button class="connect-btn" id="connect-btn" onclick="connectWallet()">
+      Connect Wallet
+    </button>
   </div>
 </header>
+
+<!-- Network warning -->
+<div class="network-warning" id="network-warning">
+  ⚠️ Please switch to Base Mainnet (Chain ID: 8453) to use HedgeX.
+  <button onclick="switchToBase()" style="background:var(--amber);border:none;border-radius:4px;padding:4px 10px;color:#000;font-family:var(--font-mono);font-size:10px;cursor:pointer;margin-left:8px">Switch Now</button>
+</div>
 
 <div class="main-grid">
 
   <!-- LEFT: Prediction Markets -->
-  <div class="pane" id="left-pane">
+  <div class="pane">
     <div class="stats-strip">
       <div class="stat"><div class="stat-label">Total Volume</div><div class="stat-val">Ξ 142.8</div></div>
       <div class="stat"><div class="stat-label">Open Markets</div><div class="stat-val">3</div></div>
       <div class="stat"><div class="stat-label">ETH Price</div><div class="stat-val up" id="eth-price">$3,241</div></div>
       <div class="stat"><div class="stat-label">BTC Price</div><div class="stat-val up" id="btc-price">$98,400</div></div>
+      <div class="stat"><div class="stat-label">Your Wallet</div><div class="stat-val" id="wallet-short" style="color:var(--text2)">Not connected</div></div>
     </div>
 
     <div class="pane-header">
       <div>
         <div class="pane-title">Prediction Markets</div>
-        <div class="pane-subtitle">Bet on crypto outcomes · Base L2</div>
+        <div class="pane-subtitle">Bet on crypto outcomes · Base Mainnet</div>
       </div>
     </div>
 
@@ -216,27 +203,37 @@ select.sim-input option{background:var(--panel)}
     <div class="bet-panel" id="bet-panel" style="display:none">
       <div class="bet-header">Place Bet</div>
       <div id="bet-market-q" style="font-size:11px;color:var(--white);margin-bottom:12px;line-height:1.5"></div>
-      <div class="bet-amount-row">
-        <input class="bet-input" id="bet-amount" type="number" placeholder="0.01" step="0.01" min="0.001" value="0.01" oninput="updateBetPreview()"/>
-        <div class="presets">
-          <button class="preset" onclick="setAmount(0.01)">0.01</button>
-          <button class="preset" onclick="setAmount(0.05)">0.05</button>
-          <button class="preset" onclick="setAmount(0.1)">0.1</button>
+
+      <!-- Show connect prompt if not connected -->
+      <div id="connect-to-bet" class="connect-to-bet" style="display:none">
+        Connect your wallet to place bets on Base
+        <button onclick="connectWallet()">Connect Wallet →</button>
+      </div>
+
+      <!-- Show bet form if connected -->
+      <div id="bet-form" style="display:none">
+        <div class="bet-amount-row">
+          <input class="bet-input" id="bet-amount" type="number" placeholder="0.01" step="0.01" min="0.001" value="0.01" oninput="updateBetPreview()"/>
+          <div class="presets">
+            <button class="preset" onclick="setAmount(0.01)">0.01</button>
+            <button class="preset" onclick="setAmount(0.05)">0.05</button>
+            <button class="preset" onclick="setAmount(0.1)">0.1</button>
+          </div>
         </div>
-      </div>
-      <div class="bet-choice">
-        <button class="bet-btn yes" onclick="placeBet(true)">YES <span id="yes-pct-btn">—</span></button>
-        <button class="bet-btn no" onclick="placeBet(false)">NO <span id="no-pct-btn">—</span></button>
-      </div>
-      <div class="bet-info">
-        <span>Est. payout</span>
-        <span id="est-payout">—</span>
+        <div class="bet-choice">
+          <button class="bet-btn yes" onclick="placeBet(true)">YES <span id="yes-pct-btn">—</span></button>
+          <button class="bet-btn no" onclick="placeBet(false)">NO <span id="no-pct-btn">—</span></button>
+        </div>
+        <div class="bet-info">
+          <span>Est. payout</span>
+          <span id="est-payout">—</span>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- RIGHT: Hedge Engine -->
-  <div class="pane" id="right-pane">
+  <div class="pane">
     <div class="pane-header">
       <div>
         <div class="pane-title">Hedge Engine</div>
@@ -245,39 +242,33 @@ select.sim-input option{background:var(--panel)}
       <button class="suggest-btn" style="width:auto;padding:8px 14px;font-size:11px" onclick="autoHedge()">Auto-Hedge</button>
     </div>
 
-    <!-- Simulator View -->
-    <div id="sim-view">
-      <div class="sim-grid">
-        <div class="sim-input-group">
-          <div class="sim-label">Your position</div>
-          <select class="sim-input" id="sim-direction" onchange="runSim()">
-            <option value="long">LONG ETH</option>
-            <option value="short">SHORT ETH</option>
-            <option value="long-btc">LONG BTC</option>
-            <option value="short-btc">SHORT BTC</option>
-          </select>
-        </div>
-        <div class="sim-input-group">
-          <div class="sim-label">Position size (Ξ)</div>
-          <input class="sim-input" type="number" id="sim-size" value="1" step="0.1" oninput="runSim()"/>
-        </div>
-        <div class="sim-input-group">
-          <div class="sim-label">Entry price ($)</div>
-          <input class="sim-input" type="number" id="sim-entry" value="3200" oninput="runSim()"/>
-        </div>
-        <div class="sim-input-group">
-          <div class="sim-label">Hedge bet (Ξ)</div>
-          <input class="sim-input" type="number" id="sim-hedge" value="0.05" step="0.01" oninput="runSim()"/>
-        </div>
+    <div class="sim-grid">
+      <div class="sim-input-group">
+        <div class="sim-label">Your position</div>
+        <select class="sim-input" id="sim-direction" onchange="runSim()">
+          <option value="long">LONG ETH</option>
+          <option value="short">SHORT ETH</option>
+          <option value="long-btc">LONG BTC</option>
+          <option value="short-btc">SHORT BTC</option>
+        </select>
       </div>
-
-      <div id="sim-output"></div>
+      <div class="sim-input-group">
+        <div class="sim-label">Position size (Ξ)</div>
+        <input class="sim-input" type="number" id="sim-size" value="1" step="0.1" oninput="runSim()"/>
+      </div>
+      <div class="sim-input-group">
+        <div class="sim-label">Entry price ($)</div>
+        <input class="sim-input" type="number" id="sim-entry" value="3200" oninput="runSim()"/>
+      </div>
+      <div class="sim-input-group">
+        <div class="sim-label">Hedge bet (Ξ)</div>
+        <input class="sim-input" type="number" id="sim-hedge" value="0.05" step="0.01" oninput="runSim()"/>
+      </div>
     </div>
 
-    <!-- Hedge suggestion -->
+    <div id="sim-output"></div>
     <div id="hedge-suggestion-area" style="margin-top:16px"></div>
 
-    <!-- Portfolio positions -->
     <div style="margin-top:20px">
       <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Simulated Positions</div>
       <div id="positions-list">
@@ -298,26 +289,149 @@ select.sim-input option{background:var(--panel)}
 </div>
 </div>
 
+<!-- TX Toast -->
+<div class="tx-toast" id="tx-toast"></div>
+
 <script>
-const MARKETS = [
-  {
-    id:0, question:"Will ETH be above $4000 by end of this week?",
-    asset:"ETH", targetPrice:4000,
-    yesPool:2.4, noPool:3.8,
-    closes:"2d 14h", status:"open"
-  },
-  {
-    id:1, question:"Will BTC reach $100k this month?",
-    asset:"BTC", targetPrice:100000,
-    yesPool:5.1, noPool:2.9,
-    closes:"6d 3h", status:"open"
-  },
-  {
-    id:2, question:"Will ETH drop below $2500 this week?",
-    asset:"ETH", targetPrice:2500,
-    yesPool:0.8, noPool:6.2,
-    closes:"3d 22h", status:"open"
+// ── Contract config ──────────────────────────────────────────────────────────
+const CONTRACT_ADDRESS = "0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd";
+const BASE_CHAIN_ID = "0x2105"; // 8453 in hex
+const BASE_SEPOLIA_CHAIN_ID = "0x14a34"; // 84532 in hex
+
+// ── Wallet state ─────────────────────────────────────────────────────────────
+let walletAddress = null;
+let isConnected = false;
+
+async function connectWallet() {
+  if (typeof window.ethereum === 'undefined') {
+    alert('MetaMask not found!\n\nPlease install MetaMask from metamask.io then refresh this page.');
+    return;
   }
+
+  try {
+    // Request accounts
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    walletAddress = accounts[0];
+    isConnected = true;
+
+    // Check network
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    handleChainChange(chainId);
+
+    updateWalletUI();
+
+    // Listen for account changes
+    window.ethereum.on('accountsChanged', (accounts) => {
+      if (accounts.length === 0) {
+        disconnectWallet();
+      } else {
+        walletAddress = accounts[0];
+        updateWalletUI();
+      }
+    });
+
+    // Listen for chain changes
+    window.ethereum.on('chainChanged', handleChainChange);
+
+  } catch (err) {
+    if (err.code === 4001) {
+      showToast('Connection rejected. Please approve in MetaMask.', false);
+    } else {
+      showToast('Connection failed: ' + err.message, false);
+    }
+  }
+}
+
+function handleChainChange(chainId) {
+  const warning = document.getElementById('network-warning');
+  const chainBadge = document.getElementById('chain-badge');
+  const chainName = document.getElementById('chain-name');
+
+  if (chainId === BASE_CHAIN_ID) {
+    warning.classList.remove('visible');
+    chainName.textContent = 'Base';
+    chainBadge.style.display = 'flex';
+  } else if (chainId === BASE_SEPOLIA_CHAIN_ID) {
+    warning.classList.remove('visible');
+    chainName.textContent = 'Base Sepolia';
+    chainBadge.style.display = 'flex';
+  } else {
+    warning.classList.add('visible');
+    chainBadge.style.display = 'none';
+  }
+}
+
+async function switchToBase() {
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: BASE_CHAIN_ID }],
+    });
+  } catch (err) {
+    // Chain not added yet — add it
+    if (err.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: BASE_CHAIN_ID,
+          chainName: 'Base',
+          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+          rpcUrls: ['https://mainnet.base.org'],
+          blockExplorerUrls: ['https://basescan.org'],
+        }],
+      });
+    }
+  }
+}
+
+function disconnectWallet() {
+  walletAddress = null;
+  isConnected = false;
+  updateWalletUI();
+  document.getElementById('chain-badge').style.display = 'none';
+  document.getElementById('network-warning').classList.remove('visible');
+}
+
+function updateWalletUI() {
+  const btn = document.getElementById('connect-btn');
+  const shortEl = document.getElementById('wallet-short');
+
+  if (isConnected && walletAddress) {
+    const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
+    btn.innerHTML = `<span class="wallet-avatar"></span> ${short}`;
+    btn.classList.add('connected');
+    shortEl.textContent = short;
+    shortEl.style.color = 'var(--green)';
+
+    // Show bet form, hide connect prompt
+    const betForm = document.getElementById('bet-form');
+    const connectPrompt = document.getElementById('connect-to-bet');
+    if (betForm) betForm.style.display = 'block';
+    if (connectPrompt) connectPrompt.style.display = 'none';
+
+    showToast(`✅ Connected: ${short}`, true);
+  } else {
+    btn.innerHTML = 'Connect Wallet';
+    btn.classList.remove('connected');
+    shortEl.textContent = 'Not connected';
+    shortEl.style.color = 'var(--text2)';
+  }
+}
+
+function showToast(message, isGood) {
+  const toast = document.getElementById('tx-toast');
+  toast.innerHTML = message;
+  toast.style.borderColor = isGood ? 'var(--green)' : 'var(--red)';
+  toast.style.color = isGood ? 'var(--green)' : 'var(--red)';
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 4000);
+}
+
+// ── Markets ──────────────────────────────────────────────────────────────────
+const MARKETS = [
+  { id:0, question:"Will ETH be above $4000 by end of this week?", asset:"ETH", targetPrice:4000, yesPool:2.4, noPool:3.8, closes:"2d 14h" },
+  { id:1, question:"Will BTC reach $100k this month?", asset:"BTC", targetPrice:100000, yesPool:5.1, noPool:2.9, closes:"6d 3h" },
+  { id:2, question:"Will ETH drop below $2500 this week?", asset:"ETH", targetPrice:2500, yesPool:0.8, noPool:6.2, closes:"3d 22h" }
 ];
 
 let selectedMarket = null;
@@ -326,16 +440,12 @@ let currentFilter = 'all';
 function getOdds(m) {
   const total = m.yesPool + m.noPool;
   if (total === 0) return { yes: 50, no: 50 };
-  return {
-    yes: Math.round((m.yesPool / total) * 100),
-    no:  Math.round((m.noPool  / total) * 100)
-  };
+  return { yes: Math.round((m.yesPool / total) * 100), no: Math.round((m.noPool / total) * 100) };
 }
 
 function renderMarkets() {
   const list = document.getElementById('markets-list');
   const filtered = currentFilter === 'all' ? MARKETS : MARKETS.filter(m => m.asset === currentFilter);
-
   list.innerHTML = filtered.map(m => {
     const odds = getOdds(m);
     const total = (m.yesPool + m.noPool).toFixed(2);
@@ -348,14 +458,8 @@ function renderMarkets() {
       </div>
       <div class="market-q">${m.question}</div>
       <div class="odds-row">
-        <div class="odds-btn yes">
-          <span class="odds-pct">${odds.yes}%</span>
-          <span class="odds-label">YES</span>
-        </div>
-        <div class="odds-btn no">
-          <span class="odds-pct">${odds.no}%</span>
-          <span class="odds-label">NO</span>
-        </div>
+        <div class="odds-btn yes"><span class="odds-pct">${odds.yes}%</span><span class="odds-label">YES</span></div>
+        <div class="odds-btn no"><span class="odds-pct">${odds.no}%</span><span class="odds-label">NO</span></div>
       </div>
       <div class="odds-bar"><div class="odds-fill" style="width:${odds.yes}%"></div></div>
       <div class="market-pool">Pool: <span>Ξ ${total}</span></div>
@@ -369,6 +473,16 @@ function selectMarket(id) {
   const panel = document.getElementById('bet-panel');
   panel.style.display = 'block';
   document.getElementById('bet-market-q').textContent = selectedMarket.question;
+
+  // Show correct section based on wallet
+  if (isConnected) {
+    document.getElementById('bet-form').style.display = 'block';
+    document.getElementById('connect-to-bet').style.display = 'none';
+  } else {
+    document.getElementById('bet-form').style.display = 'none';
+    document.getElementById('connect-to-bet').style.display = 'block';
+  }
+
   updateBetPreview();
   updateHedgeSuggestion();
 }
@@ -384,7 +498,6 @@ function updateBetPreview() {
   const odds = getOdds(selectedMarket);
   document.getElementById('yes-pct-btn').textContent = `${odds.yes}%`;
   document.getElementById('no-pct-btn').textContent = `${odds.no}%`;
-
   const total = selectedMarket.yesPool + selectedMarket.noPool + amount;
   const winPool = selectedMarket.yesPool + amount;
   const losePool = selectedMarket.noPool;
@@ -394,17 +507,46 @@ function updateBetPreview() {
   document.getElementById('est-payout').textContent = `Ξ ${payout.toFixed(4)} (+${(((payout/amount)-1)*100).toFixed(1)}%)`;
 }
 
-function placeBet(isYes) {
+async function placeBet(isYes) {
+  if (!isConnected) { connectWallet(); return; }
   if (!selectedMarket) return;
+
   const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
-  if (amount < 0.001) { alert('Min bet is 0.001 ETH'); return; }
+  if (amount < 0.001) { showToast('Min bet is 0.001 ETH', false); return; }
 
-  alert(`Simulated: Placed Ξ ${amount} on ${isYes ? 'YES' : 'NO'}\n\nIn production: Connect wallet → sign tx on Base Sepolia\n\nContract: deploy/scripts/deploy.js`);
+  try {
+    // Send real transaction to contract
+    const amountWei = '0x' + Math.floor(amount * 1e18).toString(16);
+    const data = '0x' +
+      'b5e9e4c5' + // bet(uint256,bool) selector
+      selectedMarket.id.toString(16).padStart(64, '0') +
+      (isYes ? '1' : '0').padStart(64, '0');
 
-  if (isYes) selectedMarket.yesPool += amount;
-  else selectedMarket.noPool += amount;
-  renderMarkets();
-  updateBetPreview();
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: walletAddress,
+        to: CONTRACT_ADDRESS,
+        value: amountWei,
+        data: data,
+      }]
+    });
+
+    showToast(`✅ Bet placed! <a href="https://basescan.org/tx/${txHash}" target="_blank">View on BaseScan →</a>`, true);
+
+    // Update local pool
+    if (isYes) selectedMarket.yesPool += amount;
+    else selectedMarket.noPool += amount;
+    renderMarkets();
+    updateBetPreview();
+
+  } catch (err) {
+    if (err.code === 4001) {
+      showToast('Transaction rejected by user', false);
+    } else {
+      showToast('Transaction failed: ' + (err.message || 'Unknown error'), false);
+    }
+  }
 }
 
 function filterMarkets(f, btn) {
@@ -415,13 +557,13 @@ function filterMarkets(f, btn) {
 }
 
 // ── Hedge Simulator ──────────────────────────────────────────────────────────
-
 function runSim() {
-  const dir    = document.getElementById('sim-direction').value;
-  const size   = parseFloat(document.getElementById('sim-size').value) || 1;
-  const entry  = parseFloat(document.getElementById('sim-entry').value) || 3200;
-  const hedge  = parseFloat(document.getElementById('sim-hedge').value) || 0.05;
+  const dir = document.getElementById('sim-direction').value;
+  const size = parseFloat(document.getElementById('sim-size').value) || 1;
+  const entry = parseFloat(document.getElementById('sim-entry').value) || 3200;
+  const hedge = parseFloat(document.getElementById('sim-hedge').value) || 0.05;
   const current = dir.includes('btc') ? 98400 : 3241;
+  const isLong = dir.startsWith('long');
 
   const scenarios = [
     { label: '-20%', price: current * 0.8 },
@@ -431,29 +573,15 @@ function runSim() {
     { label: '+20%', price: current * 1.2 },
   ];
 
-  const isLong = dir.startsWith('long');
-
   const results = scenarios.map(s => {
-    const futurePnl = isLong
-      ? (s.price - entry) * size
-      : (entry - s.price) * size;
-
-    // Hedge: if long, bought NO on a bullish market (wins if price stays below target)
-    // Simple model: hedge pays 1.8x if price stays below target
+    const futurePnl = isLong ? (s.price - entry) * size : (entry - s.price) * size;
     const hedgeTarget = dir.includes('btc') ? 100000 : 4000;
     const hedgeWins = isLong ? s.price < hedgeTarget : s.price > (entry * 0.9);
     const hedgePnl = hedgeWins ? hedge * 1.6 : -hedge;
-
-    return {
-      label: s.label,
-      future: futurePnl,
-      hedge: hedgePnl,
-      total: futurePnl + hedgePnl
-    };
+    return { label: s.label, future: futurePnl, hedge: hedgePnl, total: futurePnl + hedgePnl };
   });
 
   const maxAbs = Math.max(...results.map(r => Math.abs(r.total)), 1);
-
   const barHeight = 80;
   const barsHTML = results.map(r => {
     const pct = Math.abs(r.total) / maxAbs;
@@ -461,8 +589,7 @@ function runSim() {
     const isPos = r.total >= 0;
     const color = isPos ? 'var(--green)' : 'var(--red)';
     const sign = isPos ? '+' : '';
-    return `
-    <div class="bar-wrap">
+    return `<div class="bar-wrap">
       <div class="bar-val" style="color:${color};font-size:9px">${sign}$${Math.abs(r.total).toFixed(0)}</div>
       <div class="bar" style="height:${h}px;background:${color};width:100%"></div>
       <div class="bar-label">${r.label}</div>
@@ -471,12 +598,9 @@ function runSim() {
 
   const worstNoHedge = Math.min(...results.map(r => r.future));
   const worstWithHedge = Math.min(...results.map(r => r.total));
-  const riskReduction = worstNoHedge < 0
-    ? Math.min(100, Math.round(((worstNoHedge - worstWithHedge) / Math.abs(worstNoHedge)) * 100))
-    : 0;
+  const riskReduction = worstNoHedge < 0 ? Math.min(100, Math.round(((worstNoHedge - worstWithHedge) / Math.abs(worstNoHedge)) * 100)) : 0;
   const strength = Math.min(100, Math.round((hedge / size) * 800));
   const fillClass = strength < 30 ? 'low' : strength < 60 ? 'med' : 'high';
-  const bestTotal = Math.max(...results.map(r => r.total));
   const flatTotal = results.find(r => r.label === 'Flat')?.total || 0;
 
   document.getElementById('sim-output').innerHTML = `
@@ -508,23 +632,17 @@ function updateHedgeSuggestion() {
   const dir = document.getElementById('sim-direction').value;
   const isLong = dir.startsWith('long');
   const asset = dir.includes('btc') ? 'BTC' : 'ETH';
-
-  if (selectedMarket.asset !== asset) {
-    document.getElementById('hedge-suggestion-area').innerHTML = '';
-    return;
-  }
-
+  if (selectedMarket.asset !== asset) { document.getElementById('hedge-suggestion-area').innerHTML = ''; return; }
   const odds = getOdds(selectedMarket);
   const suggestYes = !isLong;
   const suggestPct = suggestYes ? odds.yes : odds.no;
-
   document.getElementById('hedge-suggestion-area').innerHTML = `
     <div class="hedge-suggestion">
       <strong>AI Hedge Suggestion</strong><br><br>
       You are <strong>${isLong ? 'LONG' : 'SHORT'} ${asset}</strong>.<br><br>
       → Bet <strong>${suggestYes ? 'YES' : 'NO'} (${suggestPct}%)</strong> on:<br>
       <em style="color:var(--text)">"${selectedMarket.question}"</em><br><br>
-      This creates a <strong>partial hedge</strong>: if your futures position moves against you, your prediction bet profits — reducing net loss.
+      This creates a partial hedge — if your futures position loses, your prediction bet profits.
       <br><br>
       <button class="suggest-btn" onclick="applyHedgeSuggestion(${suggestYes})" style="margin-top:4px">
         Apply Hedge → Bet ${suggestYes ? 'YES' : 'NO'}
@@ -535,41 +653,52 @@ function updateHedgeSuggestion() {
 function applyHedgeSuggestion(isYes) {
   if (!selectedMarket) return;
   document.getElementById('bet-amount').value = document.getElementById('sim-hedge').value;
+  if (!isConnected) { connectWallet(); return; }
   placeBet(isYes);
 }
 
 function autoHedge() {
-  if (!selectedMarket) {
-    alert('Select a market first, then click Auto-Hedge');
-    return;
-  }
+  if (!selectedMarket) { showToast('Select a market first!', false); return; }
   updateHedgeSuggestion();
   document.getElementById('hedge-suggestion-area').scrollIntoView({behavior:'smooth'});
 }
 
-function showView(v) {
-  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-}
-
-// Simulate live price ticks
+// Live price ticks
 function tickPrices() {
   const ethEl = document.getElementById('eth-price');
   const btcEl = document.getElementById('btc-price');
   let eth = 3241, btc = 98400;
   setInterval(() => {
+    const prevEth = eth, prevBtc = btc;
     eth += (Math.random() - 0.5) * 8;
     btc += (Math.random() - 0.5) * 200;
     ethEl.textContent = `$${Math.round(eth).toLocaleString()}`;
     btcEl.textContent = `$${Math.round(btc).toLocaleString()}`;
-    ethEl.style.color = eth > 3241 ? 'var(--green)' : 'var(--red)';
-    btcEl.style.color = btc > 98400 ? 'var(--green)' : 'var(--red)';
+    ethEl.style.color = eth >= prevEth ? 'var(--green)' : 'var(--red)';
+    btcEl.style.color = btc >= prevBtc ? 'var(--green)' : 'var(--red)';
   }, 2000);
+}
+
+// Auto-connect if already authorized
+async function autoConnect() {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        walletAddress = accounts[0];
+        isConnected = true;
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        handleChainChange(chainId);
+        updateWalletUI();
+      }
+    } catch(e) {}
+  }
 }
 
 renderMarkets();
 runSim();
 tickPrices();
+autoConnect();
 </script>
 </body>
 </html>
