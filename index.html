@@ -185,6 +185,10 @@ select.sim-input option{background:var(--panel)}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
             <div style="font-size:11px;color:var(--text2)">Balance</div>
             <div style="font-size:13px;font-weight:600;color:var(--green)" id="dd-balance">—</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+              <div style="font-size:11px;color:var(--text2)">HedgeX balance</div>
+              <div style="font-size:13px;font-weight:600;color:var(--blue)" id="dd-hx-balance">Ξ 0.0000</div>
+            </div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
             <div style="font-size:11px;color:var(--text2)">Network</div>
@@ -215,76 +219,124 @@ select.sim-input option{background:var(--panel)}
       </div>
 
       <!-- Deposit Modal -->
-      <div id="deposit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center">
-        <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:340px;max-width:90vw">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--white)">Deposit ETH</div>
-            <button onclick="closeModal('deposit-modal')" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer">✕</button>
+      <!-- DEPOSIT MODAL -->
+      <div id="deposit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;align-items:center;justify-content:center">
+        <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:380px;max-width:95vw">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--white)">Deposit ETH</div>
+            <button onclick="closeModal('deposit-modal')" style="background:transparent;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
           </div>
-          <div style="font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.6">
-            Send ETH to your wallet on Base network to place bets.
-          </div>
-
-          <!-- QR placeholder + address -->
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px">
-            <div style="font-size:10px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Your Base address</div>
-            <div style="font-size:11px;color:var(--white);font-family:var(--font-mono);word-break:break-all;line-height:1.6" id="modal-address">—</div>
-            <button onclick="copyAddress()" style="margin-top:10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:6px 14px;color:var(--blue);font-family:var(--font-mono);font-size:10px;cursor:pointer">Copy Address</button>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:20px;line-height:1.6">
+            Deposit ETH to your HedgeX balance. Trade without gas fees. Withdraw anytime.
           </div>
 
-          <!-- Bridge option -->
-          <div style="background:var(--blue-dim);border:1px solid var(--border2);border-radius:10px;padding:12px;margin-bottom:14px">
-            <div style="font-size:11px;font-weight:600;color:var(--blue);margin-bottom:4px">Bridge from Ethereum</div>
-            <div style="font-size:10px;color:var(--text2);margin-bottom:8px">Have ETH on Ethereum mainnet? Bridge it to Base.</div>
-            <button onclick="window.open('https://bridge.base.org','_blank')" style="background:var(--blue2);border:none;border-radius:6px;padding:7px 14px;color:var(--white);font-family:var(--font-mono);font-size:10px;cursor:pointer;width:100%">
-              Open Base Bridge →
-            </button>
+          <!-- HedgeX balance display -->
+          <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">HedgeX balance</div>
+              <div style="font-size:22px;font-weight:700;color:var(--green)" id="modal-hx-balance">Ξ 0.0000</div>
+            </div>
+            <div style="font-size:10px;color:var(--green);opacity:.7">No gas fees</div>
           </div>
 
-          <!-- Buy option -->
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px">
-            <div style="font-size:11px;font-weight:600;color:var(--white);margin-bottom:4px">Buy ETH directly</div>
-            <div style="font-size:10px;color:var(--text2);margin-bottom:8px">Buy ETH on Coinbase and withdraw to Base.</div>
-            <button onclick="window.open('https://coinbase.com','_blank')" style="background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:7px 14px;color:var(--text);font-family:var(--font-mono);font-size:10px;cursor:pointer;width:100%">
-              Go to Coinbase →
-            </button>
+          <!-- Amount input -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Amount to deposit (ETH)</div>
+            <div style="display:flex;gap:8px">
+              <input id="deposit-amount" type="number" placeholder="0.01" step="0.001" min="0.001" class="bet-input" style="flex:1;font-size:13px" oninput="updateDepositPreview()"/>
+              <button onclick="setMaxDeposit()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--blue);font-family:var(--font-mono);font-size:11px;cursor:pointer">Max</button>
+            </div>
+            <div style="font-size:10px;color:var(--text2);margin-top:5px">Wallet balance: <span id="deposit-wallet-bal" style="color:var(--white)">—</span></div>
+          </div>
+
+          <!-- Quick amounts -->
+          <div style="display:flex;gap:6px;margin-bottom:16px">
+            <button onclick="document.getElementById('deposit-amount').value=0.01;updateDepositPreview()" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer">0.01</button>
+            <button onclick="document.getElementById('deposit-amount').value=0.05;updateDepositPreview()" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer">0.05</button>
+            <button onclick="document.getElementById('deposit-amount').value=0.1;updateDepositPreview()" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer">0.1</button>
+            <button onclick="document.getElementById('deposit-amount').value=0.5;updateDepositPreview()" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer">0.5</button>
+          </div>
+
+          <!-- Preview -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:11px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--text2)">You send</span>
+              <span style="color:var(--white)" id="dep-preview-send">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--text2)">HedgeX balance after</span>
+              <span style="color:var(--green)" id="dep-preview-after">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="color:var(--text2)">Destination</span>
+              <span style="color:var(--text2);font-size:10px">0x4433...7E48</span>
+            </div>
+          </div>
+
+          <button onclick="sendDeposit()" style="width:100%;background:var(--green);border:none;border-radius:10px;padding:13px;color:#000;font-family:var(--font-display);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#00FF99'" onmouseout="this.style.background='var(--green)'">
+            Deposit to HedgeX →
+          </button>
+
+          <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--text3)">
+            Funds held by HedgeX protocol · Withdraw anytime
           </div>
         </div>
       </div>
 
-      <!-- Withdraw Modal -->
-      <div id="withdraw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center">
-        <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:340px;max-width:90vw">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--white)">Withdraw ETH</div>
-            <button onclick="closeModal('withdraw-modal')" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer">✕</button>
+      <!-- WITHDRAW MODAL -->
+      <div id="withdraw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;align-items:center;justify-content:center">
+        <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:380px;max-width:95vw">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--white)">Withdraw ETH</div>
+            <button onclick="closeModal('withdraw-modal')" style="background:transparent;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
           </div>
-          <div style="font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.6">
-            Send ETH from your Base wallet to another address.
-          </div>
-
-          <div style="margin-bottom:12px">
-            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Recipient address</div>
-            <input id="withdraw-to" type="text" placeholder="0x..." class="bet-input" style="width:100%;font-size:12px"/>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:20px;line-height:1.6">
+            Withdraw your HedgeX balance back to your wallet.
           </div>
 
-          <div style="margin-bottom:16px">
-            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Amount (ETH)</div>
-            <div style="display:flex;gap:8px">
-              <input id="withdraw-amount" type="number" placeholder="0.0" step="0.001" class="bet-input" style="flex:1;font-size:12px"/>
-              <button onclick="setMaxWithdraw()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--blue);font-family:var(--font-mono);font-size:11px;cursor:pointer">Max</button>
+          <!-- HedgeX balance display -->
+          <div style="background:var(--blue-dim);border:1px solid var(--blue);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:10px;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Available to withdraw</div>
+              <div style="font-size:22px;font-weight:700;color:var(--blue)" id="modal-withdraw-balance">Ξ 0.0000</div>
             </div>
-            <div style="font-size:10px;color:var(--text2);margin-top:5px">Balance: <span id="withdraw-bal" style="color:var(--white)">—</span></div>
+            <button onclick="setMaxHxWithdraw()" style="background:var(--blue2);border:none;border-radius:6px;padding:6px 12px;color:var(--white);font-family:var(--font-mono);font-size:10px;cursor:pointer">Max</button>
           </div>
 
-          <button onclick="sendWithdraw()" style="width:100%;background:var(--blue2);border:1px solid var(--blue);border-radius:10px;padding:12px;color:var(--white);font-family:var(--font-display);font-size:14px;font-weight:700;cursor:pointer">
-            Send ETH →
+          <!-- Amount -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Amount to withdraw (ETH)</div>
+            <input id="hx-withdraw-amount" type="number" placeholder="0.01" step="0.001" min="0.001" class="bet-input" style="width:100%;font-size:13px" oninput="updateWithdrawPreview()"/>
+          </div>
+
+          <!-- Destination -->
+          <div style="margin-bottom:16px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Send to (your wallet auto-filled)</div>
+            <input id="hx-withdraw-to" type="text" placeholder="0x..." class="bet-input" style="width:100%;font-size:11px"/>
+          </div>
+
+          <!-- Preview -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:11px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--text2)">You receive</span>
+              <span style="color:var(--white)" id="wd-preview-receive">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--text2)">HedgeX balance after</span>
+              <span style="color:var(--red)" id="wd-preview-after">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="color:var(--text2)">Processing time</span>
+              <span style="color:var(--amber)">1-24 hours</span>
+            </div>
+          </div>
+
+          <button onclick="requestWithdraw()" style="width:100%;background:var(--blue2);border:1px solid var(--blue);border-radius:10px;padding:13px;color:var(--white);font-family:var(--font-display);font-size:15px;font-weight:700;cursor:pointer">
+            Request Withdrawal →
           </button>
 
-          <div style="margin-top:10px;text-align:center">
-            <button onclick="window.open('https://bridge.base.org','_blank')" style="background:transparent;border:none;color:var(--blue);font-family:var(--font-mono);font-size:11px;cursor:pointer;text-decoration:underline">
-              Bridge back to Ethereum →
-            </button>
+          <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--text3)">
+            Withdrawals processed manually · Usually within 24h
           </div>
         </div>
       </div>
@@ -308,6 +360,7 @@ select.sim-input option{background:var(--panel)}
       <div class="stat"><div class="stat-label">ETH Price</div><div class="stat-val up" id="eth-price">Loading...</div></div>
       <div class="stat"><div class="stat-label">BTC Price</div><div class="stat-val up" id="btc-price">Loading...</div></div>
       <div class="stat"><div class="stat-label">Your Wallet</div><div class="stat-val" id="wallet-short" style="color:var(--text2)">Not connected</div></div>
+      <div class="stat" style="cursor:pointer" onclick="openDeposit()"><div class="stat-label">HedgeX Balance</div><div class="stat-val" id="stat-hx-balance" style="color:var(--green)">Ξ 0.0000</div></div>
     </div>
 
     <div class="pane-header">
@@ -346,6 +399,25 @@ select.sim-input option{background:var(--panel)}
 
       <!-- Show bet form if connected -->
       <div id="bet-form" style="display:none">
+
+        <!-- Trading mode selector -->
+        <div style="margin-bottom:12px">
+          <div style="font-size:10px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Trading mode</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+            <button id="mode-custodial" onclick="setTradingMode('custodial')"
+              style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-align:left;transition:all .15s">
+              <div style="font-weight:600;margin-bottom:2px">⚡ Gasless</div>
+              <div style="font-size:9px;opacity:.7">Deposit once · no gas per bet</div>
+            </button>
+            <button id="mode-noncustodial" onclick="setTradingMode('noncustodial')"
+              style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-align:left;transition:all .15s">
+              <div style="font-weight:600;margin-bottom:2px">🔗 On-chain</div>
+              <div style="font-size:9px;opacity:.7">Self-custody · MetaMask tx</div>
+            </button>
+          </div>
+          <div id="bet-mode-info" style="font-size:10px;color:var(--text2);padding:6px 10px;background:var(--bg3);border-radius:6px;line-height:1.6"></div>
+        </div>
+
         <div class="bet-amount-row">
           <input class="bet-input" id="bet-amount" type="number" placeholder="0.01" step="0.01" min="0.001" value="0.01" oninput="updateBetPreview()"/>
           <div class="presets">
@@ -596,6 +668,43 @@ const CONTRACT_ADDRESS = "0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd";
 const CONTRACT_TESTNET  = "0x26c467f66D8172eAfeb7C9C2d7A5f271Ab1ec889";
 const BASE_CHAIN_ID = "0x2105";
 const BASE_SEPOLIA_CHAIN_ID = "0x14a34";
+
+// ── Trading mode ─────────────────────────────────────────────────────────────
+// 'custodial'     = deposit to HedgeX, gasless bets, withdraw request
+// 'noncustodial'  = direct MetaMask tx per bet, self-custody
+let tradingMode = localStorage.getItem('hedgex_mode') || 'custodial';
+
+function setTradingMode(mode) {
+  tradingMode = mode;
+  localStorage.setItem('hedgex_mode', mode);
+  updateModeUI();
+}
+
+function updateModeUI() {
+  const custBtn = document.getElementById('mode-custodial');
+  const noncBtn = document.getElementById('mode-noncustodial');
+  const betInfo = document.getElementById('bet-mode-info');
+
+  if (custBtn) {
+    custBtn.style.background   = tradingMode === 'custodial' ? 'var(--green-dim)' : 'var(--bg3)';
+    custBtn.style.borderColor  = tradingMode === 'custodial' ? 'var(--green)'     : 'var(--border)';
+    custBtn.style.color        = tradingMode === 'custodial' ? 'var(--green)'     : 'var(--text2)';
+  }
+  if (noncBtn) {
+    noncBtn.style.background  = tradingMode === 'noncustodial' ? 'var(--blue-dim)' : 'var(--bg3)';
+    noncBtn.style.borderColor = tradingMode === 'noncustodial' ? 'var(--blue)'     : 'var(--border)';
+    noncBtn.style.color       = tradingMode === 'noncustodial' ? 'var(--blue)'     : 'var(--text2)';
+  }
+  if (betInfo) {
+    betInfo.innerHTML = tradingMode === 'custodial'
+      ? `<span style="color:var(--green)">⚡ Gasless mode</span> — using HedgeX balance (<span style="color:var(--green)" id="bet-hx-bal">Ξ${getHxBalance().toFixed(4)}</span>) · <a href="#" onclick="openDeposit();return false" style="color:var(--green);text-decoration:underline">Deposit</a>`
+      : `<span style="color:var(--blue)">🔗 On-chain mode</span> — each bet sends a MetaMask transaction`;
+  }
+}
+
+// ── Bets storage (must be declared early) ────────────────────────────────────
+let myBets = [];
+try { myBets = JSON.parse(localStorage.getItem('hedgex_bets') || '[]'); } catch(e) { myBets = []; }
 
 // ── Points system config ──────────────────────────────────────────────────────
 const POINTS = {
@@ -1051,68 +1160,153 @@ function renderPointsView() {
   </div>`;
 }
 
-// ── Balance + Deposit/Withdraw ───────────────────────────────────────────────
+// ── Custodial Balance System ─────────────────────────────────────────────────
+const HOUSE_ADDRESS = '0x443337ecA50Da7aDC44BE6553ADdC5aA07657E48';
 let walletBalance = 0;
+
+// HedgeX internal balance — stored per wallet in localStorage
+function getHxBalance() {
+  if (!walletAddress) return 0;
+  const data = JSON.parse(localStorage.getItem('hedgex_balances') || '{}');
+  return parseFloat(data[walletAddress] || 0);
+}
+
+function setHxBalance(amount) {
+  if (!walletAddress) return;
+  const data = JSON.parse(localStorage.getItem('hedgex_balances') || '{}');
+  data[walletAddress] = Math.max(0, parseFloat(amount.toFixed(6)));
+  localStorage.setItem('hedgex_balances', JSON.stringify(data));
+  updateBalanceUI();
+  // Save to admin tracker
+  saveAdminRecord('balance_update', { address: walletAddress, balance: data[walletAddress] });
+}
+
+function updateBalanceUI() {
+  const bal = getHxBalance();
+  const balStr = 'Ξ ' + bal.toFixed(4);
+  const els = ['stat-hx-balance','dd-hx-balance','modal-hx-balance','modal-withdraw-balance','bet-hx-bal'];
+  els.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = balStr; });
+  updateModeUI();
+}
+
+function saveAdminRecord(type, data) {
+  const records = JSON.parse(localStorage.getItem('hedgex_admin') || '[]');
+  records.push({ type, data, wallet: walletAddress, time: new Date().toISOString() });
+  localStorage.setItem('hedgex_admin', JSON.stringify(records.slice(-500)));
+}
 
 async function fetchBalance() {
   if (!walletAddress || !window.ethereum) return;
   try {
-    const hex = await window.ethereum.request({
-      method: 'eth_getBalance',
-      params: [walletAddress, 'latest']
-    });
+    const hex = await window.ethereum.request({ method: 'eth_getBalance', params: [walletAddress, 'latest'] });
     walletBalance = parseInt(hex, 16) / 1e18;
     const balStr = walletBalance.toFixed(4) + ' ETH';
     const el = document.getElementById('dd-balance');
-    const el2 = document.getElementById('withdraw-bal');
     if (el) el.textContent = balStr;
-    if (el2) el2.textContent = balStr;
+    const depBal = document.getElementById('deposit-wallet-bal');
+    if (depBal) depBal.textContent = balStr;
   } catch(e) {}
+  updateBalanceUI();
 }
 
 function openDeposit() {
   document.getElementById('wallet-dropdown').style.display = 'none';
   const modal = document.getElementById('deposit-modal');
   modal.style.display = 'flex';
+  fetchBalance();
+  updateBalanceUI();
 }
 
 function openWithdraw() {
   document.getElementById('wallet-dropdown').style.display = 'none';
   const modal = document.getElementById('withdraw-modal');
   modal.style.display = 'flex';
-  fetchBalance();
+  updateBalanceUI();
+  const toEl = document.getElementById('hx-withdraw-to');
+  if (toEl && walletAddress) toEl.value = walletAddress;
 }
 
 function closeModal(id) {
   document.getElementById(id).style.display = 'none';
 }
 
-function setMaxWithdraw() {
-  const max = Math.max(0, walletBalance - 0.001).toFixed(6);
-  document.getElementById('withdraw-amount').value = max;
+function setMaxDeposit() {
+  const max = Math.max(0, walletBalance - 0.002).toFixed(6);
+  document.getElementById('deposit-amount').value = max;
+  updateDepositPreview();
 }
 
-async function sendWithdraw() {
-  const to     = document.getElementById('withdraw-to').value.trim();
-  const amount = parseFloat(document.getElementById('withdraw-amount').value);
+function setMaxHxWithdraw() {
+  const max = getHxBalance().toFixed(6);
+  document.getElementById('hx-withdraw-amount').value = max;
+  updateWithdrawPreview();
+}
 
-  if (!to || !to.startsWith('0x')) { showToast('Enter a valid address', false); return; }
-  if (!amount || amount <= 0)      { showToast('Enter a valid amount', false); return; }
-  if (amount > walletBalance)      { showToast('Insufficient balance', false); return; }
+function updateDepositPreview() {
+  const amount = parseFloat(document.getElementById('deposit-amount')?.value) || 0;
+  const after  = getHxBalance() + amount;
+  const s = document.getElementById('dep-preview-send');
+  const a = document.getElementById('dep-preview-after');
+  if (s) s.textContent = 'Ξ ' + amount.toFixed(4);
+  if (a) a.textContent = 'Ξ ' + after.toFixed(4);
+}
+
+function updateWithdrawPreview() {
+  const amount = parseFloat(document.getElementById('hx-withdraw-amount')?.value) || 0;
+  const after  = Math.max(0, getHxBalance() - amount);
+  const r = document.getElementById('wd-preview-receive');
+  const a = document.getElementById('wd-preview-after');
+  if (r) r.textContent = 'Ξ ' + amount.toFixed(4);
+  if (a) a.textContent = 'Ξ ' + after.toFixed(4);
+}
+
+async function sendDeposit() {
+  const amount = parseFloat(document.getElementById('deposit-amount')?.value) || 0;
+  if (amount < 0.001) { showToast('Minimum deposit is 0.001 ETH', false); return; }
+  if (amount > walletBalance) { showToast('Insufficient wallet balance', false); return; }
 
   try {
-    const amountHex = '0x' + Math.floor(amount * 1e18).toString(16);
+    const amountHex = '0x' + BigInt(Math.floor(amount * 1e18)).toString(16);
     const txHash = await window.ethereum.request({
       method: 'eth_sendTransaction',
-      params: [{ from: walletAddress, to, value: amountHex }]
+      params: [{ from: walletAddress, to: HOUSE_ADDRESS, value: amountHex }]
     });
-    closeModal('withdraw-modal');
-    showToast(`✅ Sent! <a href="https://basescan.org/tx/${txHash}" target="_blank">View →</a>`, true);
-    setTimeout(fetchBalance, 3000);
+
+    // Credit HedgeX balance immediately
+    const newBal = getHxBalance() + amount;
+    setHxBalance(newBal);
+
+    // Save deposit record for admin
+    saveAdminRecord('deposit', { amount, txHash, newBalance: newBal });
+    awardPoints('Deposit made', Math.floor(amount * 1000));
+
+    closeModal('deposit-modal');
+    showToast(`✅ Deposited Ξ${amount.toFixed(4)}! HedgeX balance: Ξ${newBal.toFixed(4)}`, true);
+    fetchBalance();
+
   } catch(e) {
     if (e.code === 4001) showToast('Transaction rejected', false);
-    else showToast('Error: ' + e.message, false);
+    else showToast('Deposit failed: ' + (e.message || 'Unknown'), false);
   }
+}
+
+function requestWithdraw() {
+  const amount = parseFloat(document.getElementById('hx-withdraw-amount')?.value) || 0;
+  const to     = document.getElementById('hx-withdraw-to')?.value.trim();
+  const hxBal  = getHxBalance();
+
+  if (amount < 0.001)   { showToast('Minimum withdrawal is 0.001 ETH', false); return; }
+  if (amount > hxBal)   { showToast('Insufficient HedgeX balance', false); return; }
+  if (!to || !to.startsWith('0x')) { showToast('Enter a valid wallet address', false); return; }
+
+  // Deduct from HedgeX balance immediately
+  setHxBalance(hxBal - amount);
+
+  // Save withdrawal request for admin to process
+  saveAdminRecord('withdrawal_request', { amount, to, previousBalance: hxBal, newBalance: hxBal - amount });
+
+  closeModal('withdraw-modal');
+  showToast(`✅ Withdrawal request submitted! Ξ${amount.toFixed(4)} will be sent to ${to.slice(0,6)}...${to.slice(-4)} within 24h`, true);
 }
 
 function copyAddress() {
@@ -1344,6 +1538,7 @@ function selectMarket(id) {
 
   updateBetPreview();
   updateHedgeSuggestion();
+  updateModeUI();
 }
 
 function setAmount(v) {
@@ -1374,44 +1569,62 @@ async function placeBet(isYes) {
   if (amount < 0.001) { showToast('Min bet is 0.001 ETH', false); return; }
 
   try {
-    // Send real transaction to contract
-    const amountWei = '0x' + Math.floor(amount * 1e18).toString(16);
-    const data = '0x' +
-      'b5e9e4c5' + // bet(uint256,bool) selector
-      selectedMarket.id.toString(16).padStart(64, '0') +
-      (isYes ? '1' : '0').padStart(64, '0');
+    if (tradingMode === 'custodial') {
+      // ── GASLESS MODE: use HedgeX internal balance ──────────────────────────
+      const hxBal = getHxBalance();
+      if (hxBal < amount) {
+        showToast(`Insufficient HedgeX balance (Ξ${hxBal.toFixed(4)}). <a href="#" onclick="openDeposit();return false" style="color:var(--green);text-decoration:underline">Deposit →</a>`, false);
+        return;
+      }
+      // Deduct from balance
+      setHxBalance(hxBal - amount);
+      const betId = 'HX-' + Date.now().toString(36).toUpperCase();
+      saveAdminRecord('bet_gasless', {
+        marketId: selectedMarket.id,
+        question: selectedMarket.question,
+        asset: selectedMarket.asset,
+        isYes, amount, betId,
+        balanceBefore: hxBal,
+        balanceAfter: hxBal - amount
+      });
+      showToast(`✅ Bet placed (gasless)! Ξ${amount} on ${isYes ? 'YES' : 'NO'} · ID: ${betId}`, true);
+      saveBet(selectedMarket, isYes, amount, betId);
 
-    const txHash = await window.ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        from: walletAddress,
-        to: CONTRACT_ADDRESS,
-        value: amountWei,
-        data: data,
-      }]
-    });
+    } else {
+      // ── ON-CHAIN MODE: direct MetaMask transaction ─────────────────────────
+      const amountWei   = '0x' + BigInt(Math.floor(amount * 1e18)).toString(16);
+      const contract    = isTestnet ? CONTRACT_TESTNET : CONTRACT_ADDRESS;
+      const explorer    = isTestnet ? 'https://sepolia.basescan.org' : 'https://basescan.org';
+      const marketIdHex = selectedMarket.id.toString(16).padStart(64, '0');
+      const isYesHex    = (isYes ? '1' : '0').padStart(64, '0');
+      const calldata    = '0xd20a6188' + marketIdHex + isYesHex;
 
-    showToast(`✅ Bet placed! <a href="https://basescan.org/tx/${txHash}" target="_blank">View on BaseScan →</a>`, true);
-    saveBet(selectedMarket, isYes, amount, txHash);
-    const myP = getMyPoints();
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{ from: walletAddress, to: contract, value: amountWei, data: calldata, gas: '0x30D40' }]
+      });
+      showToast(`✅ Bet placed on-chain! <a href="${explorer}/tx/${txHash}" target="_blank">View →</a>`, true);
+      saveBet(selectedMarket, isYes, amount, txHash);
+    }
+
+    // Award points either way
+    const myP    = getMyPoints();
     const isFirst = myP && myP.history.filter(h => h.reason.includes('Bet')).length === 0;
     if (isFirst) awardPoints('First prediction bet!', POINTS.FIRST_BET);
-    else awardPoints('Bet placed', POINTS.BET_PLACED);
+    else         awardPoints('Bet placed', POINTS.BET_PLACED);
     const extraPts = Math.floor(amount / 0.01) * POINTS.BET_PER_0_01;
     if (extraPts > 0) awardPoints(`Bet size bonus (${amount.toFixed(3)} ETH)`, extraPts);
 
-    // Update local pool
+    // Update local pool display
     if (isYes) selectedMarket.yesPool += amount;
-    else selectedMarket.noPool += amount;
+    else       selectedMarket.noPool  += amount;
     renderMarkets();
     updateBetPreview();
+    updateModeUI();
 
   } catch (err) {
-    if (err.code === 4001) {
-      showToast('Transaction rejected by user', false);
-    } else {
-      showToast('Transaction failed: ' + (err.message || 'Unknown error'), false);
-    }
+    if (err.code === 4001) showToast('Transaction rejected', false);
+    else showToast('Bet failed: ' + (err.message || 'Unknown'), false);
   }
 }
 
@@ -1592,6 +1805,7 @@ autoConnect();
 fullSim();
 updateVolumeStats();
 updateLivePositions();
+updateModeUI();
 
 // Show points badge if wallet already connected
 setTimeout(() => {
@@ -1997,7 +2211,6 @@ function fullSim() {
 }
 
 // ── Portfolio ─────────────────────────────────────────────────────────────────
-let myBets = JSON.parse(localStorage.getItem('hedgex_bets') || '[]');
 
 function saveBet(market, isYes, amount, txHash) {
   myBets.push({
