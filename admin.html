@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HedgeX Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060810;--bg2:#0B0F1A;--bg3:#101626;--panel:#131A2E;
+  --border:#1E2D4A;--border2:#2A3D5E;
+  --blue:#4D8EFF;--green:#00D97E;--red:#FF4560;--amber:#F59E0B;--purple:#A78BFA;
+  --text:#C8D8F0;--text2:#6B8CAE;--white:#EEF4FF;
+  --font:'IBM Plex Mono',monospace;--display:'Syne',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--display);font-size:18px;font-weight:800;color:var(--white)}
+.logo span{color:var(--red)}
+.badge{font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;margin-left:8px}
+
+.login-wrap{display:flex;align-items:center;justify-content:center;height:calc(100vh - 56px)}
+.login-card{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:32px;width:320px;text-align:center}
+.login-card h2{font-family:var(--display);font-size:18px;color:var(--white);margin-bottom:8px}
+.login-card p{font-size:11px;color:var(--text2);margin-bottom:20px}
+.login-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--white);font-family:var(--font);font-size:13px;outline:none;margin-bottom:12px}
+.login-btn{width:100%;background:var(--blue);border:none;border-radius:8px;padding:11px;color:#fff;font-family:var(--display);font-size:14px;font-weight:700;cursor:pointer}
+.login-btn:hover{background:#6FA8FF}
+
+.dashboard{display:none;padding:24px}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:700;color:var(--white)}
+
+.controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.search{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;color:var(--white);font-family:var(--font);font-size:12px;outline:none;width:220px}
+.search:focus{border-color:var(--blue)}
+.btn{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;color:var(--text2);font-family:var(--font);font-size:11px;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--blue);color:var(--white)}
+.btn.active{background:var(--blue-dim,#1A2D5A);border-color:var(--blue);color:var(--blue)}
+.btn-green{background:var(--green);border:none;color:#000;font-weight:700}
+.btn-green:hover{background:#00FF99;color:#000}
+.btn-red{background:var(--red);border:none;color:#fff;font-weight:700}
+
+.table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--bg3)}
+th{padding:10px 14px;font-size:10px;color:var(--text2);text-align:left;font-weight:500;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none}
+th:hover{color:var(--white)}
+td{padding:10px 14px;font-size:11px;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(77,142,255,.04)}
+
+.level-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.mode-badge{padding:2px 8px;border-radius:4px;font-size:10px}
+.pts-input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--white);font-family:var(--font);font-size:11px;width:70px;outline:none}
+.pts-input:focus{border-color:var(--blue)}
+
+.action-btn{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text2);font-family:var(--font);font-size:10px;cursor:pointer;transition:all .1s}
+.action-btn:hover{border-color:var(--blue);color:var(--blue)}
+.action-btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--panel);border:1px solid var(--green);border-radius:10px;padding:12px 18px;font-size:12px;color:var(--green);display:none;z-index:100}
+
+.empty{text-align:center;padding:48px;color:var(--text2);font-size:12px}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:360px}
+.modal h3{font-family:var(--display);font-size:16px;color:var(--white);margin-bottom:12px}
+.modal p{font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.modal-row{display:flex;gap:8px}
+
+select.btn{font-family:var(--font)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">HedgeX <span>Admin</span><span class="badge">PRIVATE</span></div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span id="last-sync" style="font-size:10px;color:var(--text2)">Not synced</span>
+    <button class="btn" onclick="loadData()">↻ Refresh</button>
+    <button class="btn" onclick="exportCSV()">↓ Export CSV</button>
+    <button class="btn btn-red" onclick="logout()" style="font-size:10px">Logout</button>
+  </div>
+</header>
+
+<!-- Login -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-card">
+    <h2>Admin Access</h2>
+    <p>Enter your admin password to access the HedgeX dashboard</p>
+    <input class="login-input" type="password" id="pwd-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="login-btn" onclick="login()">Enter Dashboard</button>
+    <div id="login-err" style="font-size:11px;color:var(--red);margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total users</div>
+      <div class="stat-val" id="stat-users">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total points</div>
+      <div class="stat-val" id="stat-pts" style="color:var(--amber)">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total bets</div>
+      <div class="stat-val" id="stat-bets" style="color:var(--blue)">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Custodial</div>
+      <div class="stat-val" id="stat-cust" style="color:var(--green)">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Non-custodial</div>
+      <div class="stat-val" id="stat-noncust" style="color:var(--purple)">0</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <input class="search" id="search" placeholder="Search wallet..." oninput="renderTable()"/>
+    <select class="btn" id="filter-mode" onchange="renderTable()">
+      <option value="all">All modes</option>
+      <option value="custodial">Custodial</option>
+      <option value="noncustodial">Non-custodial</option>
+    </select>
+    <select class="btn" id="filter-level" onchange="renderTable()">
+      <option value="all">All levels</option>
+      <option value="Rookie">Rookie</option>
+      <option value="Trader">Trader</option>
+      <option value="Pro">Pro</option>
+      <option value="Whale">Whale</option>
+      <option value="Legend">Legend</option>
+    </select>
+    <select class="btn" id="sort-by" onchange="renderTable()">
+      <option value="points">Sort: Points</option>
+      <option value="bets">Sort: Bets</option>
+      <option value="streak">Sort: Streak</option>
+      <option value="updated">Sort: Recent</option>
+    </select>
+    <button class="btn btn-green" onclick="openAirdropModal()">🪂 Airdrop snapshot</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Wallet</th>
+          <th onclick="sortBy('points')">Points ↕</th>
+          <th onclick="sortBy('bets')">Bets ↕</th>
+          <th>Hedges</th>
+          <th onclick="sortBy('streak')">Streak ↕</th>
+          <th>Level</th>
+          <th>Mode</th>
+          <th>Last login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div class="empty" id="empty-state" style="display:none">No users found</div>
+  </div>
+</div>
+
+<!-- Adjust Points Modal -->
+<div class="modal-bg" id="adjust-modal">
+  <div class="modal">
+    <h3>Adjust Points</h3>
+    <p id="adjust-wallet-text" style="color:var(--blue);font-size:11px;margin-bottom:8px"></p>
+    <p>Add or subtract points for this user. Use negative numbers to deduct.</p>
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Amount (e.g. +500 or -200)</div>
+      <input id="adjust-amount" type="number" class="login-input" placeholder="500" style="margin:0"/>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Reason</div>
+      <input id="adjust-reason" type="text" class="login-input" placeholder="Manual bonus" style="margin:0"/>
+    </div>
+    <div class="modal-row">
+      <button class="btn" onclick="closeModal()" style="flex:1">Cancel</button>
+      <button class="btn btn-green" onclick="submitAdjust()" style="flex:1">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Airdrop Modal -->
+<div class="modal-bg" id="airdrop-modal">
+  <div class="modal">
+    <h3>🪂 Airdrop Snapshot</h3>
+    <p>Generate airdrop allocations based on current points. Total $HEDGE supply for airdrop: 40,000,000</p>
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Min points to qualify</div>
+      <input id="min-pts" type="number" class="login-input" placeholder="100" value="100" style="margin:0"/>
+    </div>
+    <div id="airdrop-preview" style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:16px;font-size:11px;color:var(--text2)">
+      Set minimum points and click Preview
+    </div>
+    <div class="modal-row">
+      <button class="btn" onclick="closeModal()" style="flex:1">Cancel</button>
+      <button class="btn" onclick="previewAirdrop()" style="flex:1;border-color:var(--amber);color:var(--amber)">Preview</button>
+      <button class="btn btn-green" onclick="exportAirdrop()" style="flex:1">Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEETS_URL    = 'https://script.google.com/macros/s/AKfycbyIqSQBy7Ns4yxvbu3WxTWlK5Gx109Ppc4WsrHfw0YvonBsMKFD3CSSwCJwKYSyUkoiTg/exec';
+const SHEETS_SECRET = 'hedgex2025';
+const ADMIN_PWD     = 'hedgex2025admin';
+
+const LEVELS = [
+  { name:'Rookie',  min:0,     color:'#6B8CAE' },
+  { name:'Trader',  min:500,   color:'#4D8EFF' },
+  { name:'Pro',     min:2000,  color:'#A78BFA' },
+  { name:'Whale',   min:5000,  color:'#F59E0B' },
+  { name:'Legend',  min:15000, color:'#00D97E' },
+];
+
+let allUsers = [];
+let adjustTarget = null;
+let sortDir = -1;
+let currentSort = 'points';
+
+function getLevel(pts) {
+  let l = LEVELS[0];
+  for (const lv of LEVELS) if (pts >= lv.min) l = lv;
+  return l;
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function login() {
+  const pwd = document.getElementById('pwd-input').value;
+  if (pwd === ADMIN_PWD) {
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('login-err').textContent = 'Wrong password';
+  }
+}
+
+function logout() {
+  document.getElementById('login-wrap').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  document.getElementById('last-sync').textContent = 'Loading...';
+  try {
+    const res  = await fetch(`${SHEETS_URL}?secret=${SHEETS_SECRET}`);
+    const data = await res.json();
+    allUsers   = data.users || [];
+    renderStats();
+    renderTable();
+    document.getElementById('last-sync').textContent = 'Synced ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('last-sync').textContent = 'Sync failed';
+    showToast('Failed to load data — check your script URL', false);
+  }
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const total  = allUsers.length;
+  const pts    = allUsers.reduce((s,u) => s + (parseInt(u.Points)||0), 0);
+  const bets   = allUsers.reduce((s,u) => s + (parseInt(u.Bets)||0), 0);
+  const cust   = allUsers.filter(u => (u.Mode||'').toLowerCase() === 'custodial').length;
+  const noncust= allUsers.filter(u => (u.Mode||'').toLowerCase() === 'noncustodial').length;
+
+  document.getElementById('stat-users').textContent   = total;
+  document.getElementById('stat-pts').textContent     = pts.toLocaleString();
+  document.getElementById('stat-bets').textContent    = bets;
+  document.getElementById('stat-cust').textContent    = cust;
+  document.getElementById('stat-noncust').textContent = noncust;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if (currentSort === col) sortDir *= -1;
+  else { currentSort = col; sortDir = -1; }
+  document.getElementById('sort-by').value = col;
+  renderTable();
+}
+
+function renderTable() {
+  const search  = document.getElementById('search').value.toLowerCase();
+  const mode    = document.getElementById('filter-mode').value;
+  const level   = document.getElementById('filter-level').value;
+  const sortCol = document.getElementById('sort-by').value;
+
+  let users = [...allUsers];
+
+  if (search) users = users.filter(u => (u.Wallet||'').toLowerCase().includes(search));
+  if (mode !== 'all') users = users.filter(u => (u.Mode||'').toLowerCase() === mode);
+  if (level !== 'all') users = users.filter(u => getLevel(parseInt(u.Points)||0).name === level);
+
+  users.sort((a,b) => {
+    const aV = sortCol === 'updated' ? new Date(a.Updated||0) : (parseInt(a[sortCol.charAt(0).toUpperCase()+sortCol.slice(1)])||0);
+    const bV = sortCol === 'updated' ? new Date(b.Updated||0) : (parseInt(b[sortCol.charAt(0).toUpperCase()+sortCol.slice(1)])||0);
+    return sortDir * (bV > aV ? 1 : -1);
+  });
+
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('empty-state');
+
+  if (users.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = users.map((u, i) => {
+    const pts   = parseInt(u.Points) || 0;
+    const level = getLevel(pts);
+    const mode  = (u.Mode || 'custodial').toLowerCase();
+    const short = u.Wallet ? u.Wallet.slice(0,6)+'...'+u.Wallet.slice(-4) : '—';
+
+    return `<tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td>
+        <span style="font-family:var(--font);color:var(--white)">${short}</span>
+        <button class="action-btn" onclick="navigator.clipboard.writeText('${u.Wallet}')" style="margin-left:6px">⎘</button>
+      </td>
+      <td style="color:${level.color};font-weight:600">${pts.toLocaleString()}</td>
+      <td style="color:var(--blue)">${u.Bets||0}</td>
+      <td style="color:var(--purple)">${u.Hedges||0}</td>
+      <td style="color:var(--amber)">${u.Streak||0}d</td>
+      <td><span class="level-badge" style="background:${level.color}22;color:${level.color};border:1px solid ${level.color}44">${level.name}</span></td>
+      <td><span class="mode-badge" style="background:${mode==='custodial'?'var(--green-dim,#003D23)':'var(--blue-dim,#1A2D5A)'};color:${mode==='custodial'?'var(--green)':'var(--blue)'};border:1px solid ${mode==='custodial'?'var(--green)':'var(--blue)'}">
+        ${mode === 'custodial' ? '⚡' : '🔗'} ${mode}
+      </span></td>
+      <td style="color:var(--text2);font-size:10px">${u['Last Login']||'—'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="action-btn" onclick="openAdjust('${u.Wallet}', ${pts})">+/− pts</button>
+        <a href="https://basescan.org/address/${u.Wallet}" target="_blank"><button class="action-btn">scan</button></a>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Adjust Points ─────────────────────────────────────────────────────────────
+function openAdjust(wallet, currentPts) {
+  adjustTarget = { wallet, currentPts };
+  document.getElementById('adjust-wallet-text').textContent = wallet;
+  document.getElementById('adjust-amount').value = '';
+  document.getElementById('adjust-reason').value = '';
+  document.getElementById('adjust-modal').style.display = 'flex';
+}
+
+async function submitAdjust() {
+  const amount = parseInt(document.getElementById('adjust-amount').value);
+  const reason = document.getElementById('adjust-reason').value || 'Admin adjustment';
+  if (!amount) { showToast('Enter an amount', false); return; }
+
+  const user = allUsers.find(u => u.Wallet === adjustTarget.wallet);
+  if (!user) return;
+
+  const newPts = Math.max(0, (parseInt(user.Points)||0) + amount);
+  user.Points = newPts;
+
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: SHEETS_SECRET,
+        wallet: adjustTarget.wallet,
+        points: newPts,
+        bets:   parseInt(user.Bets)||0,
+        hedges: parseInt(user.Hedges)||0,
+        streak: parseInt(user.Streak)||0,
+        lastLogin: user['Last Login']||'',
+        mode: user.Mode||'custodial'
+      })
+    });
+    closeModal();
+    renderStats();
+    renderTable();
+    showToast(`✅ ${adjustTarget.wallet.slice(0,8)}... → ${newPts.toLocaleString()} pts (${amount > 0 ? '+' : ''}${amount})`, true);
+  } catch(e) {
+    showToast('Update failed', false);
+  }
+}
+
+// ── Airdrop ───────────────────────────────────────────────────────────────────
+function openAirdropModal() {
+  document.getElementById('airdrop-modal').style.display = 'flex';
+}
+
+function previewAirdrop() {
+  const minPts   = parseInt(document.getElementById('min-pts').value) || 100;
+  const eligible = allUsers.filter(u => (parseInt(u.Points)||0) >= minPts);
+  const totalPts = eligible.reduce((s,u) => s + (parseInt(u.Points)||0), 0);
+  const SUPPLY   = 40_000_000;
+
+  const preview = eligible.slice(0,5).map(u => {
+    const pts   = parseInt(u.Points)||0;
+    const alloc = Math.round((pts / totalPts) * SUPPLY);
+    return `${u.Wallet.slice(0,10)}... → ${alloc.toLocaleString()} $HEDGE`;
+  }).join('<br>');
+
+  document.getElementById('airdrop-preview').innerHTML = `
+    <div style="color:var(--white);margin-bottom:8px">
+      ${eligible.length} eligible · ${totalPts.toLocaleString()} total pts
+    </div>
+    ${preview}
+    ${eligible.length > 5 ? `<div style="margin-top:4px;color:var(--text2)">...and ${eligible.length-5} more</div>` : ''}
+  `;
+}
+
+function exportAirdrop() {
+  const minPts   = parseInt(document.getElementById('min-pts').value) || 100;
+  const eligible = allUsers.filter(u => (parseInt(u.Points)||0) >= minPts);
+  const totalPts = eligible.reduce((s,u) => s + (parseInt(u.Points)||0), 0);
+  const SUPPLY   = 40_000_000;
+
+  const rows = [['Wallet','Points','HEDGE Allocation','Level']];
+  eligible.forEach(u => {
+    const pts   = parseInt(u.Points)||0;
+    const alloc = Math.round((pts / totalPts) * SUPPLY);
+    rows.push([u.Wallet, pts, alloc, getLevel(pts).name]);
+  });
+
+  downloadCSV(rows, 'hedgex_airdrop_snapshot.csv');
+  closeModal();
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const rows = [['Wallet','Points','Bets','Hedges','Streak','Last Login','Mode','Updated']];
+  allUsers.forEach(u => rows.push([u.Wallet,u.Points,u.Bets,u.Hedges,u.Streak,u['Last Login'],u.Mode,u.Updated]));
+  downloadCSV(rows, 'hedgex_users.csv');
+}
+
+function downloadCSV(rows, filename) {
+  const csv  = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function closeModal() {
+  document.getElementById('adjust-modal').style.display  = 'none';
+  document.getElementById('airdrop-modal').style.display = 'none';
+}
+
+function showToast(msg, good) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.style.borderColor = good ? 'var(--green)' : 'var(--red)';
+  t.style.color       = good ? 'var(--green)' : 'var(--red)';
+  t.style.display     = 'block';
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+
+// Auto refresh every 60 seconds
+setInterval(() => {
+  if (document.getElementById('dashboard').style.display !== 'none') loadData();
+}, 60000);
+</script>
+</body>
+</html>

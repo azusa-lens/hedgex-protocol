@@ -774,6 +774,33 @@ const LEVELS = [
   { name:'Legend',   min:15000,  color:'#00D97E', badge:'👑' },
 ];
 
+// ── Google Sheets sync ───────────────────────────────────────────────────────
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyIqSQBy7Ns4yxvbu3WxTWlK5Gx109Ppc4WsrHfw0YvonBsMKFD3CSSwCJwKYSyUkoiTg/exec';
+const SHEETS_SECRET = 'hedgex2025';
+
+async function syncToSheets() {
+  if (!walletAddress) return;
+  const p = getMyPoints();
+  if (!p) return;
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret:    SHEETS_SECRET,
+        wallet:    walletAddress,
+        points:    p.points,
+        bets:      (p.history||[]).filter(h => h.reason.includes('Bet') || h.reason.includes('bet')).length,
+        hedges:    (p.history||[]).filter(h => h.reason.includes('hedge') || h.reason.includes('Hedge')).length,
+        streak:    p.streak || 0,
+        lastLogin: p.lastLogin || new Date().toDateString(),
+        mode:      tradingMode || 'custodial'
+      })
+    });
+  } catch(e) {}
+}
+
 // ── Points storage ────────────────────────────────────────────────────────────
 let pointsData = JSON.parse(localStorage.getItem('hedgex_points') || '{}');
 // Structure: { address: { points, history:[], streak, lastLogin, referralCode, referredBy } }
@@ -789,12 +816,13 @@ function getMyPoints() {
 
 function savePoints() {
   localStorage.setItem('hedgex_points', JSON.stringify(pointsData));
-  // Also save to leaderboard key so admin can read all
   const lb = {};
   Object.keys(pointsData).forEach(addr => {
     lb[addr] = { points: pointsData[addr].points, streak: pointsData[addr].streak, bets: (pointsData[addr].history||[]).length };
   });
   localStorage.setItem('hedgex_leaderboard', JSON.stringify(lb));
+  // Sync to Google Sheets
+  setTimeout(syncToSheets, 1000);
 }
 
 function awardPoints(reason, pts) {
