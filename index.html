@@ -156,15 +156,139 @@ select.sim-input option{background:var(--panel)}
     <button class="nav-pill active" onclick="showView('markets',this)">Markets</button>
     <button class="nav-pill" onclick="showView('simulator',this)">Simulator</button>
     <button class="nav-pill" onclick="showView('portfolio',this)">Portfolio</button>
+    <button class="nav-pill" onclick="showView('points',this)">⭐ Points</button>
   </div>
   <div class="wallet-section">
+    <div id="points-badge" style="display:none;font-size:11px;font-family:var(--font-mono);padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:pointer" onclick="showView('points', this)"></div>
+    <div style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;color:var(--text2)">
+      <span style="font-size:10px">Testnet</span>
+      <div style="position:relative;width:28px;height:16px;cursor:pointer" onclick="toggleNetwork()">
+        <div style="position:absolute;inset:0;background:var(--border2);border-radius:8px;transition:background .2s" id="net-track"></div>
+        <div style="position:absolute;top:2px;left:2px;width:12px;height:12px;background:white;border-radius:50%;transition:transform .2s" id="net-thumb"></div>
+      </div>
+      <span style="font-size:10px">Mainnet</span>
+    </div>
     <div class="chain-badge" id="chain-badge" style="display:none">
       <span class="chain-dot"></span>
       <span id="chain-name">Base</span>
     </div>
-    <button class="connect-btn" id="connect-btn" onclick="connectWallet()">
-      Connect Wallet
-    </button>
+    <div style="position:relative">
+      <button class="connect-btn" id="connect-btn" onclick="toggleWalletDropdown()">
+        Connect Wallet
+      </button>
+      <div id="wallet-dropdown" style="display:none;position:absolute;top:44px;right:0;background:var(--panel);border:1px solid var(--border2);border-radius:12px;min-width:220px;z-index:200;overflow:hidden">
+
+        <!-- Address + balance -->
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--text2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Connected wallet</div>
+          <div style="font-size:11px;color:var(--white);font-family:var(--font-mono);word-break:break-all" id="dd-address">—</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <div style="font-size:11px;color:var(--text2)">Balance</div>
+            <div style="font-size:13px;font-weight:600;color:var(--green)" id="dd-balance">—</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+            <div style="font-size:11px;color:var(--text2)">Network</div>
+            <div style="font-size:11px;color:var(--blue)" id="dd-network">Base</div>
+          </div>
+        </div>
+
+        <!-- Deposit + Withdraw buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)">
+          <button onclick="openDeposit()" style="padding:8px;background:var(--green-dim);border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
+            + Deposit
+          </button>
+          <button onclick="openWithdraw()" style="padding:8px;background:var(--blue-dim);border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
+            ↓ Withdraw
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <button onclick="copyAddress()" style="width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:var(--font-mono);font-size:11px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px">
+          ⎘ Copy address
+        </button>
+        <button onclick="viewOnExplorer()" style="width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:var(--font-mono);font-size:11px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)">
+          ↗ View on BaseScan
+        </button>
+        <button onclick="disconnect()" style="width:100%;padding:10px 14px;background:transparent;border:none;color:var(--red);font-family:var(--font-mono);font-size:11px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)">
+          ✕ Disconnect
+        </button>
+      </div>
+
+      <!-- Deposit Modal -->
+      <div id="deposit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center">
+        <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:340px;max-width:90vw">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--white)">Deposit ETH</div>
+            <button onclick="closeModal('deposit-modal')" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer">✕</button>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+            Send ETH to your wallet on Base network to place bets.
+          </div>
+
+          <!-- QR placeholder + address -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Your Base address</div>
+            <div style="font-size:11px;color:var(--white);font-family:var(--font-mono);word-break:break-all;line-height:1.6" id="modal-address">—</div>
+            <button onclick="copyAddress()" style="margin-top:10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:6px 14px;color:var(--blue);font-family:var(--font-mono);font-size:10px;cursor:pointer">Copy Address</button>
+          </div>
+
+          <!-- Bridge option -->
+          <div style="background:var(--blue-dim);border:1px solid var(--border2);border-radius:10px;padding:12px;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:600;color:var(--blue);margin-bottom:4px">Bridge from Ethereum</div>
+            <div style="font-size:10px;color:var(--text2);margin-bottom:8px">Have ETH on Ethereum mainnet? Bridge it to Base.</div>
+            <button onclick="window.open('https://bridge.base.org','_blank')" style="background:var(--blue2);border:none;border-radius:6px;padding:7px 14px;color:var(--white);font-family:var(--font-mono);font-size:10px;cursor:pointer;width:100%">
+              Open Base Bridge →
+            </button>
+          </div>
+
+          <!-- Buy option -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px">
+            <div style="font-size:11px;font-weight:600;color:var(--white);margin-bottom:4px">Buy ETH directly</div>
+            <div style="font-size:10px;color:var(--text2);margin-bottom:8px">Buy ETH on Coinbase and withdraw to Base.</div>
+            <button onclick="window.open('https://coinbase.com','_blank')" style="background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:7px 14px;color:var(--text);font-family:var(--font-mono);font-size:10px;cursor:pointer;width:100%">
+              Go to Coinbase →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Withdraw Modal -->
+      <div id="withdraw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center">
+        <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:340px;max-width:90vw">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--white)">Withdraw ETH</div>
+            <button onclick="closeModal('withdraw-modal')" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer">✕</button>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+            Send ETH from your Base wallet to another address.
+          </div>
+
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Recipient address</div>
+            <input id="withdraw-to" type="text" placeholder="0x..." class="bet-input" style="width:100%;font-size:12px"/>
+          </div>
+
+          <div style="margin-bottom:16px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px">Amount (ETH)</div>
+            <div style="display:flex;gap:8px">
+              <input id="withdraw-amount" type="number" placeholder="0.0" step="0.001" class="bet-input" style="flex:1;font-size:12px"/>
+              <button onclick="setMaxWithdraw()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--blue);font-family:var(--font-mono);font-size:11px;cursor:pointer">Max</button>
+            </div>
+            <div style="font-size:10px;color:var(--text2);margin-top:5px">Balance: <span id="withdraw-bal" style="color:var(--white)">—</span></div>
+          </div>
+
+          <button onclick="sendWithdraw()" style="width:100%;background:var(--blue2);border:1px solid var(--blue);border-radius:10px;padding:12px;color:var(--white);font-family:var(--font-display);font-size:14px;font-weight:700;cursor:pointer">
+            Send ETH →
+          </button>
+
+          <div style="margin-top:10px;text-align:center">
+            <button onclick="window.open('https://bridge.base.org','_blank')" style="background:transparent;border:none;color:var(--blue);font-family:var(--font-mono);font-size:11px;cursor:pointer;text-decoration:underline">
+              Bridge back to Ethereum →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -179,10 +303,10 @@ select.sim-input option{background:var(--panel)}
   <!-- LEFT: Prediction Markets -->
   <div class="pane">
     <div class="stats-strip">
-      <div class="stat"><div class="stat-label">Total Volume</div><div class="stat-val">Ξ 142.8</div></div>
-      <div class="stat"><div class="stat-label">Open Markets</div><div class="stat-val">3</div></div>
-      <div class="stat"><div class="stat-label">ETH Price</div><div class="stat-val up" id="eth-price">$3,241</div></div>
-      <div class="stat"><div class="stat-label">BTC Price</div><div class="stat-val up" id="btc-price">$98,400</div></div>
+      <div class="stat"><div class="stat-label">Total Volume</div><div class="stat-val" id="stat-volume">Ξ 0.00</div></div>
+      <div class="stat"><div class="stat-label">Open Markets</div><div class="stat-val" id="stat-markets">—</div></div>
+      <div class="stat"><div class="stat-label">ETH Price</div><div class="stat-val up" id="eth-price">Loading...</div></div>
+      <div class="stat"><div class="stat-label">BTC Price</div><div class="stat-val up" id="btc-price">Loading...</div></div>
       <div class="stat"><div class="stat-label">Your Wallet</div><div class="stat-val" id="wallet-short" style="color:var(--text2)">Not connected</div></div>
     </div>
 
@@ -293,15 +417,10 @@ select.sim-input option{background:var(--panel)}
     <div style="margin-top:16px">
       <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Simulated Positions</div>
       <div id="positions-list">
-        <div class="position-row">
-          <span class="pos-side long">LONG</span>
-          <div class="pos-info"><div style="color:var(--white);font-size:11px">ETH · 1x</div><div style="font-size:10px;color:var(--text2)">Entry $3,200 · Now $3,241</div></div>
-          <span class="pos-pnl pos">+$41</span>
-        </div>
-        <div class="position-row">
-          <span class="pos-side short">HEDGE</span>
-          <div class="pos-info"><div style="color:var(--white);font-size:11px">ETH NO bet · 0.05Ξ</div><div style="font-size:10px;color:var(--text2)">"ETH above $4000?"</div></div>
-          <span class="pos-pnl pos">Active</span>
+        <div id="live-positions-list">
+          <div style="text-align:center;padding:20px;color:var(--text3);font-size:11px">
+            No positions yet. Place a bet to see it here.
+          </div>
         </div>
       </div>
     </div>
@@ -450,6 +569,13 @@ select.sim-input option{background:var(--panel)}
   </div>
 </div>
 
+<!-- POINTS VIEW -->
+<div id="view-points" style="display:none;padding:24px;max-width:900px;margin:0 auto">
+  <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px">Points & Rewards</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:24px">Earn $HEDGE airdrop by using HedgeX on testnet</div>
+  <div id="points-view-content"></div>
+</div>
+
 <!-- PORTFOLIO VIEW -->
 <div id="view-portfolio" style="display:none;padding:24px;max-width:900px;margin:0 auto">
   <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px">Portfolio</div>
@@ -461,11 +587,150 @@ select.sim-input option{background:var(--panel)}
 <!-- TX Toast -->
 <div class="tx-toast" id="tx-toast"></div>
 
+<!-- Points Toast -->
+<div id="points-toast" style="display:none;position:fixed;bottom:72px;right:24px;background:var(--purple-dim);border:1px solid var(--purple);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--purple);z-index:998;font-family:var(--font-mono)"></div>
+
 <script>
 // ── Contract config ──────────────────────────────────────────────────────────
 const CONTRACT_ADDRESS = "0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd";
-const BASE_CHAIN_ID = "0x2105"; // 8453 in hex
-const BASE_SEPOLIA_CHAIN_ID = "0x14a34"; // 84532 in hex
+const CONTRACT_TESTNET  = "0x26c467f66D8172eAfeb7C9C2d7A5f271Ab1ec889";
+const BASE_CHAIN_ID = "0x2105";
+const BASE_SEPOLIA_CHAIN_ID = "0x14a34";
+
+// ── Points system config ──────────────────────────────────────────────────────
+const POINTS = {
+  FIRST_BET:      500,
+  BET_PLACED:     100,
+  BET_PER_0_01:    50,
+  USE_HEDGE:      200,
+  DAILY_LOGIN:     25,
+  STREAK_7:       200,
+  STREAK_30:     1000,
+  REFERRAL:       500,
+  CREATE_MARKET:  300,
+  WIN_BET:        150,
+  CONNECT_WALLET:  50,
+};
+
+const LEVELS = [
+  { name:'Rookie',   min:0,      color:'#6B8CAE', badge:'🌱' },
+  { name:'Trader',   min:500,    color:'#4D8EFF', badge:'📈' },
+  { name:'Pro',      min:2000,   color:'#A78BFA', badge:'⚡' },
+  { name:'Whale',    min:5000,   color:'#F59E0B', badge:'🐋' },
+  { name:'Legend',   min:15000,  color:'#00D97E', badge:'👑' },
+];
+
+// ── Points storage ────────────────────────────────────────────────────────────
+let pointsData = JSON.parse(localStorage.getItem('hedgex_points') || '{}');
+// Structure: { address: { points, history:[], streak, lastLogin, referralCode, referredBy } }
+
+function getMyPoints() {
+  if (!walletAddress) return null;
+  if (!pointsData[walletAddress]) {
+    pointsData[walletAddress] = { points:0, history:[], streak:0, lastLogin:null, referralCode: genRefCode(), referredBy:null };
+    savePoints();
+  }
+  return pointsData[walletAddress];
+}
+
+function savePoints() {
+  localStorage.setItem('hedgex_points', JSON.stringify(pointsData));
+  // Also save to leaderboard key so admin can read all
+  const lb = {};
+  Object.keys(pointsData).forEach(addr => {
+    lb[addr] = { points: pointsData[addr].points, streak: pointsData[addr].streak, bets: (pointsData[addr].history||[]).length };
+  });
+  localStorage.setItem('hedgex_leaderboard', JSON.stringify(lb));
+}
+
+function awardPoints(reason, pts) {
+  const p = getMyPoints();
+  if (!p) return;
+  p.points += pts;
+  p.history.push({ reason, pts, time: new Date().toISOString() });
+  savePoints();
+  showPointsToast(reason, pts);
+  updatePointsUI();
+}
+
+function showPointsToast(reason, pts) {
+  const toast = document.getElementById('points-toast');
+  if (!toast) return;
+  toast.innerHTML = `+${pts} pts — ${reason}`;
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 3000);
+}
+
+function getLevel(pts) {
+  let level = LEVELS[0];
+  for (const l of LEVELS) { if (pts >= l.min) level = l; }
+  return level;
+}
+
+function getNextLevel(pts) {
+  for (const l of LEVELS) { if (pts < l.min) return l; }
+  return null;
+}
+
+function genRefCode() {
+  return 'HX' + Math.random().toString(36).slice(2,8).toUpperCase();
+}
+
+function checkDailyLogin() {
+  const p = getMyPoints();
+  if (!p) return;
+  const today = new Date().toDateString();
+  if (p.lastLogin === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  p.streak = p.lastLogin === yesterday ? (p.streak || 0) + 1 : 1;
+  p.lastLogin = today;
+  awardPoints('Daily login', POINTS.DAILY_LOGIN);
+  if (p.streak === 7)  awardPoints('7-day streak!', POINTS.STREAK_7);
+  if (p.streak === 30) awardPoints('30-day streak!', POINTS.STREAK_30);
+  savePoints();
+}
+
+function checkReferral() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get('ref');
+  if (!ref) return;
+  const p = getMyPoints();
+  if (!p || p.referredBy) return;
+  // Find referrer
+  const referrer = Object.keys(pointsData).find(addr => pointsData[addr].referralCode === ref);
+  if (referrer && referrer !== walletAddress) {
+    p.referredBy = ref;
+    savePoints();
+    // Award referrer
+    pointsData[referrer].points += POINTS.REFERRAL;
+    pointsData[referrer].history.push({ reason:'Referral bonus', pts:POINTS.REFERRAL, time:new Date().toISOString() });
+    savePoints();
+    showToast('✅ Referral applied! Your referrer earned 500 pts', true);
+  }
+}
+
+function updatePointsUI() {
+  const p = getMyPoints();
+  if (!p) return;
+  const level = getLevel(p.points);
+  const next  = getNextLevel(p.points);
+  const pct   = next ? Math.round((p.points - level.min) / (next.min - level.min) * 100) : 100;
+
+  const el = document.getElementById('points-badge');
+  if (el) el.innerHTML = `<span style="color:${level.color}">${level.badge} ${p.points.toLocaleString()} pts</span>`;
+
+  const progressEl = document.getElementById('points-progress');
+  if (progressEl) {
+    progressEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:4px">
+        <span style="color:${level.color};font-weight:600">${level.name}</span>
+        <span>${next ? next.name+' in '+(next.min-p.points).toLocaleString()+' pts' : 'Max level!'}</span>
+      </div>
+      <div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${level.color};border-radius:2px;transition:width .5s"></div>
+      </div>`;
+  }
+}
 
 // ── Wallet state ─────────────────────────────────────────────────────────────
 let walletAddress = null;
@@ -488,6 +753,15 @@ async function connectWallet() {
     handleChainChange(chainId);
 
     updateWalletUI();
+    const badge = document.getElementById('points-badge');
+    if (badge) badge.style.display = 'block';
+    setTimeout(() => {
+      const p = getMyPoints();
+      if (p && p.points === 0) awardPoints('First wallet connect!', POINTS.CONNECT_WALLET);
+      checkDailyLogin();
+      checkReferral();
+      updatePointsUI();
+    }, 500);
 
     // Listen for account changes
     window.ethereum.on('accountsChanged', (accounts) => {
@@ -563,29 +837,319 @@ function disconnectWallet() {
 
 function updateWalletUI() {
   const btn = document.getElementById('connect-btn');
+  const dropdown = document.getElementById('wallet-dropdown');
   const shortEl = document.getElementById('wallet-short');
 
   if (isConnected && walletAddress) {
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
-    btn.innerHTML = `<span class="wallet-avatar"></span> ${short}`;
+    btn.innerHTML = `<span class="wallet-avatar"></span> ${short} <span style="font-size:9px;opacity:.6">▼</span>`;
     btn.classList.add('connected');
     shortEl.textContent = short;
     shortEl.style.color = 'var(--green)';
 
-    // Show bet form, hide connect prompt
     const betForm = document.getElementById('bet-form');
     const connectPrompt = document.getElementById('connect-to-bet');
     if (betForm) betForm.style.display = 'block';
     if (connectPrompt) connectPrompt.style.display = 'none';
 
     showToast(`✅ Connected: ${short}`, true);
+    const ddAddr = document.getElementById('dd-address');
+    if (ddAddr) ddAddr.textContent = walletAddress;
+    const modalAddr = document.getElementById('modal-address');
+    if (modalAddr) modalAddr.textContent = walletAddress;
+    fetchBalance();
   } else {
     btn.innerHTML = 'Connect Wallet';
     btn.classList.remove('connected');
     shortEl.textContent = 'Not connected';
     shortEl.style.color = 'var(--text2)';
+    if (dropdown) dropdown.style.display = 'none';
   }
 }
+
+function toggleWalletDropdown() {
+  if (!isConnected) { connectWallet(); return; }
+  const dd = document.getElementById('wallet-dropdown');
+  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Network Toggle ───────────────────────────────────────────────────────────
+let isTestnet = false;
+
+function toggleNetwork() {
+  isTestnet = !isTestnet;
+  const track = document.getElementById('net-track');
+  const thumb = document.getElementById('net-thumb');
+  if (isTestnet) {
+    if (track) track.style.background = 'var(--amber)';
+    if (thumb) thumb.style.transform = 'translateX(0px)';
+    showToast('Switched to Base Sepolia Testnet — Points farming mode!', true);
+    if (window.ethereum) switchToSepolia();
+  } else {
+    if (track) track.style.background = 'var(--blue2)';
+    if (thumb) thumb.style.transform = 'translateX(12px)';
+    showToast('Switched to Base Mainnet', true);
+    if (window.ethereum) switchToBase();
+  }
+}
+
+async function switchToSepolia() {
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: BASE_SEPOLIA_CHAIN_ID }],
+    });
+  } catch (err) {
+    if (err.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: BASE_SEPOLIA_CHAIN_ID,
+          chainName: 'Base Sepolia',
+          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+          rpcUrls: ['https://sepolia.base.org'],
+          blockExplorerUrls: ['https://sepolia.basescan.org'],
+        }]
+      });
+    }
+  }
+}
+
+// ── Points View ───────────────────────────────────────────────────────────────
+function renderPointsView() {
+  const el = document.getElementById('points-view-content');
+  if (!el) return;
+
+  if (!isConnected) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text2)">
+      <div style="font-size:32px;margin-bottom:12px">⭐</div>
+      <div style="font-size:14px;margin-bottom:16px">Connect wallet to start earning points</div>
+      <button onclick="connectWallet()" style="background:var(--blue2);border:1px solid var(--blue);border-radius:8px;padding:10px 20px;color:var(--white);font-family:var(--font-mono);font-size:12px;cursor:pointer">Connect Wallet</button>
+    </div>`;
+    return;
+  }
+
+  const p = getMyPoints();
+  if (!p) return;
+  const level = getLevel(p.points);
+  const next  = getNextLevel(p.points);
+  const pct   = next ? Math.round((p.points - level.min) / (next.min - level.min) * 100) : 100;
+
+  // Leaderboard from localStorage
+  const lb = JSON.parse(localStorage.getItem('hedgex_leaderboard') || '{}');
+  const sorted = Object.entries(lb).sort((a,b) => b[1].points - a[1].points).slice(0,10);
+  const myRank = sorted.findIndex(([addr]) => addr === walletAddress) + 1;
+
+  const refUrl = `${window.location.origin}${window.location.pathname}?ref=${p.referralCode}`;
+
+  el.innerHTML = `
+  <!-- My stats -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="font-size:36px">${level.badge}</div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:${level.color}">${level.name}</div>
+          <div style="font-size:11px;color:var(--text2)">${p.points.toLocaleString()} points total</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px">
+        ${next ? `${(next.min - p.points).toLocaleString()} pts to ${next.name}` : 'Max level reached!'}
+      </div>
+      <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${level.color};border-radius:3px;transition:width .5s"></div>
+      </div>
+    </div>
+
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg3);border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:var(--text2);text-transform:uppercase">Rank</div>
+          <div style="font-size:20px;font-weight:700;color:var(--amber)">#${myRank || '—'}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:var(--text2);text-transform:uppercase">Streak</div>
+          <div style="font-size:20px;font-weight:700;color:var(--green)">${p.streak || 0}d</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:var(--text2);text-transform:uppercase">Bets</div>
+          <div style="font-size:20px;font-weight:700;color:var(--white)">${(p.history||[]).filter(h=>h.reason.includes('Bet')).length}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:var(--text2);text-transform:uppercase">Hedges</div>
+          <div style="font-size:20px;font-weight:700;color:var(--purple)">${(p.history||[]).filter(h=>h.reason.includes('hedge')).length}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to earn -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px">
+    <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:14px">How to earn $HEDGE</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${[
+        ['First bet', POINTS.FIRST_BET],
+        ['Each bet placed', POINTS.BET_PLACED],
+        ['Per 0.01 ETH bet', POINTS.BET_PER_0_01],
+        ['Use hedge engine', POINTS.USE_HEDGE],
+        ['Daily login', POINTS.DAILY_LOGIN],
+        ['7-day streak', POINTS.STREAK_7],
+        ['30-day streak', POINTS.STREAK_30],
+        ['Refer a friend', POINTS.REFERRAL],
+        ['Win a bet', POINTS.WIN_BET],
+      ].map(([label, pts]) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border-radius:8px;padding:8px 12px">
+          <span style="font-size:11px;color:var(--text)">${label}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--green)">+${pts} pts</span>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Referral -->
+  <div style="background:var(--purple-dim);border:1px solid var(--purple);border-radius:16px;padding:20px;margin-bottom:20px">
+    <div style="font-size:13px;font-weight:600;color:var(--purple);margin-bottom:8px">Your referral link</div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:10px">Share this link — earn 500 pts for every friend who bets</div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:10px;color:var(--white);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${refUrl}</div>
+      <button onclick="navigator.clipboard.writeText('${refUrl}');showToast('✅ Referral link copied!',true)" style="background:var(--purple);border:none;border-radius:8px;padding:8px 14px;color:var(--white);font-family:var(--font-mono);font-size:11px;cursor:pointer">Copy</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--white)">Leaderboard</div>
+    ${sorted.length === 0 ? '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No users yet — you could be #1!</div>' :
+      sorted.map(([addr, data], i) => {
+        const isMe = addr === walletAddress;
+        const lvl = getLevel(data.points);
+        const medals = ['🥇','🥈','🥉'];
+        return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:28px auto 1fr auto;gap:10px;align-items:center;${isMe?'background:var(--blue-dim)':''}">
+          <span style="font-size:14px">${medals[i] || '#'+(i+1)}</span>
+          <span style="font-size:12px">${lvl.badge}</span>
+          <div>
+            <div style="font-size:11px;color:${isMe?'var(--blue)':'var(--white)'};font-family:var(--font-mono)">${addr.slice(0,6)}...${addr.slice(-4)}${isMe?' (you)':''}</div>
+            <div style="font-size:10px;color:var(--text2)">${data.bets||0} bets · ${data.streak||0}d streak</div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:${lvl.color}">${data.points.toLocaleString()} pts</span>
+        </div>`;
+      }).join('')}
+  </div>
+
+  <!-- History -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--white)">Points history</div>
+    ${(p.history||[]).length === 0 ?
+      '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No activity yet</div>' :
+      [...(p.history||[])].reverse().slice(0,20).map(h => `
+        <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:11px;color:var(--white)">${h.reason}</div>
+            <div style="font-size:10px;color:var(--text2)">${new Date(h.time).toLocaleDateString()}</div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:var(--green)">+${h.pts}</span>
+        </div>`).join('')}
+  </div>`;
+}
+
+// ── Balance + Deposit/Withdraw ───────────────────────────────────────────────
+let walletBalance = 0;
+
+async function fetchBalance() {
+  if (!walletAddress || !window.ethereum) return;
+  try {
+    const hex = await window.ethereum.request({
+      method: 'eth_getBalance',
+      params: [walletAddress, 'latest']
+    });
+    walletBalance = parseInt(hex, 16) / 1e18;
+    const balStr = walletBalance.toFixed(4) + ' ETH';
+    const el = document.getElementById('dd-balance');
+    const el2 = document.getElementById('withdraw-bal');
+    if (el) el.textContent = balStr;
+    if (el2) el2.textContent = balStr;
+  } catch(e) {}
+}
+
+function openDeposit() {
+  document.getElementById('wallet-dropdown').style.display = 'none';
+  const modal = document.getElementById('deposit-modal');
+  modal.style.display = 'flex';
+}
+
+function openWithdraw() {
+  document.getElementById('wallet-dropdown').style.display = 'none';
+  const modal = document.getElementById('withdraw-modal');
+  modal.style.display = 'flex';
+  fetchBalance();
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function setMaxWithdraw() {
+  const max = Math.max(0, walletBalance - 0.001).toFixed(6);
+  document.getElementById('withdraw-amount').value = max;
+}
+
+async function sendWithdraw() {
+  const to     = document.getElementById('withdraw-to').value.trim();
+  const amount = parseFloat(document.getElementById('withdraw-amount').value);
+
+  if (!to || !to.startsWith('0x')) { showToast('Enter a valid address', false); return; }
+  if (!amount || amount <= 0)      { showToast('Enter a valid amount', false); return; }
+  if (amount > walletBalance)      { showToast('Insufficient balance', false); return; }
+
+  try {
+    const amountHex = '0x' + Math.floor(amount * 1e18).toString(16);
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: walletAddress, to, value: amountHex }]
+    });
+    closeModal('withdraw-modal');
+    showToast(`✅ Sent! <a href="https://basescan.org/tx/${txHash}" target="_blank">View →</a>`, true);
+    setTimeout(fetchBalance, 3000);
+  } catch(e) {
+    if (e.code === 4001) showToast('Transaction rejected', false);
+    else showToast('Error: ' + e.message, false);
+  }
+}
+
+function copyAddress() {
+  if (!walletAddress) return;
+  navigator.clipboard.writeText(walletAddress);
+  showToast('✅ Address copied!', true);
+  document.getElementById('wallet-dropdown').style.display = 'none';
+}
+
+function viewOnExplorer() {
+  if (!walletAddress) return;
+  window.open(`https://basescan.org/address/${walletAddress}`, '_blank');
+  document.getElementById('wallet-dropdown').style.display = 'none';
+}
+
+function disconnect() {
+  disconnectWallet();
+  document.getElementById('wallet-dropdown').style.display = 'none';
+  showToast('Wallet disconnected', false);
+}
+
+// Close modals when clicking backdrop
+document.addEventListener('click', (e) => {
+  ['deposit-modal','withdraw-modal'].forEach(id => {
+    const modal = document.getElementById(id);
+    if (modal && e.target === modal) closeModal(id);
+  });
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('wallet-dropdown');
+  const btn = document.getElementById('connect-btn');
+  if (dd && !dd.contains(e.target) && !btn.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
 
 function showToast(message, isGood) {
   const toast = document.getElementById('tx-toast');
@@ -726,6 +1290,9 @@ function renderMarkets() {
   let filtered = currentFilter === 'all' ? MARKETS : MARKETS.filter(m => m.asset === currentFilter);
   if (currentTimeframe !== 'all') filtered = filtered.filter(m => m.timeframe === currentTimeframe);
 
+  const statM = document.getElementById('stat-markets');
+  if (statM) statM.textContent = MARKETS.length;
+
   if (filtered.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);font-size:12px">No markets found for this filter.</div>';
     return;
@@ -826,6 +1393,12 @@ async function placeBet(isYes) {
 
     showToast(`✅ Bet placed! <a href="https://basescan.org/tx/${txHash}" target="_blank">View on BaseScan →</a>`, true);
     saveBet(selectedMarket, isYes, amount, txHash);
+    const myP = getMyPoints();
+    const isFirst = myP && myP.history.filter(h => h.reason.includes('Bet')).length === 0;
+    if (isFirst) awardPoints('First prediction bet!', POINTS.FIRST_BET);
+    else awardPoints('Bet placed', POINTS.BET_PLACED);
+    const extraPts = Math.floor(amount / 0.01) * POINTS.BET_PER_0_01;
+    if (extraPts > 0) awardPoints(`Bet size bonus (${amount.toFixed(3)} ETH)`, extraPts);
 
     // Update local pool
     if (isYes) selectedMarket.yesPool += amount;
@@ -958,6 +1531,7 @@ function applyHedgeSuggestion(isYes) {
   if (!selectedMarket) return;
   document.getElementById('bet-amount').value = document.getElementById('sim-hedge').value;
   if (!isConnected) { connectWallet(); return; }
+  awardPoints('Used hedge engine', POINTS.USE_HEDGE);
   placeBet(isYes);
 }
 
@@ -1016,6 +1590,17 @@ runSim();
 tickPrices();
 autoConnect();
 fullSim();
+updateVolumeStats();
+updateLivePositions();
+
+// Show points badge if wallet already connected
+setTimeout(() => {
+  if (walletAddress) {
+    const badge = document.getElementById('points-badge');
+    if (badge) badge.style.display = 'block';
+    updatePointsUI();
+  }
+}, 1000);
 
 // ── Mini Hedge Chart (Markets page) ──────────────────────────────────────────
 let miniChart = null;
@@ -1283,13 +1868,16 @@ function showView(view, btn) {
   const mainGrid = document.querySelector('.main-grid');
   const simView  = document.getElementById('view-simulator');
   const portView = document.getElementById('view-portfolio');
+  const ptsView  = document.getElementById('view-points');
 
-  mainGrid.style.display = view === 'markets' ? 'grid' : 'none';
+  mainGrid.style.display = view === 'markets'   ? 'grid'  : 'none';
   simView.style.display  = view === 'simulator' ? 'block' : 'none';
   portView.style.display = view === 'portfolio' ? 'block' : 'none';
+  if (ptsView) ptsView.style.display = view === 'points' ? 'block' : 'none';
 
   if (view === 'simulator') { fullSim(); setTimeout(updateHedgeChart, 100); }
   if (view === 'portfolio') renderPortfolio();
+  if (view === 'points')    renderPointsView();
 }
 
 // ── Full Simulator ────────────────────────────────────────────────────────────
@@ -1423,6 +2011,33 @@ function saveBet(market, isYes, amount, txHash) {
     status: 'active'
   });
   localStorage.setItem('hedgex_bets', JSON.stringify(myBets));
+  updateVolumeStats();
+  updateLivePositions();
+}
+
+function updateVolumeStats() {
+  const total = myBets.reduce((s,b) => s + b.amount, 0);
+  const volEl = document.getElementById('stat-volume');
+  if (volEl) volEl.textContent = 'Ξ ' + total.toFixed(4);
+}
+
+function updateLivePositions() {
+  const el = document.getElementById('live-positions-list');
+  if (!el) return;
+  const recent = myBets.slice(-3).reverse();
+  if (recent.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:11px">No positions yet. Place a bet to see it here.</div>';
+    return;
+  }
+  el.innerHTML = recent.map(b => `
+    <div class="position-row">
+      <span class="pos-side ${b.side==='YES'?'long':'short'}">${b.side}</span>
+      <div class="pos-info">
+        <div style="color:var(--white);font-size:11px">${b.asset} · Ξ${b.amount}</div>
+        <div style="font-size:10px;color:var(--text2)">${b.question.slice(0,45)}...</div>
+      </div>
+      <span class="pos-pnl pos" style="font-size:10px;color:var(--amber)">Active</span>
+    </div>`).join('');
 }
 
 function renderPortfolio() {
