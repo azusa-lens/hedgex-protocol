@@ -197,13 +197,17 @@ select.sim-input option{background:var(--panel)}
         </div>
 
         <!-- Deposit + Withdraw buttons -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)">
-          <button onclick="openDeposit()" style="padding:8px;background:var(--green-dim);border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
-            + Deposit
-          </button>
-          <button onclick="openWithdraw()" style="padding:8px;background:var(--blue-dim);border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
-            ↓ Withdraw
-          </button>
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Custodial balance</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+            <button onclick="openDeposit()" style="padding:8px;background:var(--green-dim);border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
+              + Deposit
+            </button>
+            <button onclick="openWithdraw()" style="padding:8px;background:var(--blue-dim);border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-family:var(--font-mono);font-size:11px;font-weight:600;cursor:pointer">
+              ↓ Withdraw
+            </button>
+          </div>
+          <div style="font-size:9px;color:var(--text3);line-height:1.4">Deposit to trade gasless · or use Non-custodial mode to trade directly from your wallet</div>
         </div>
 
         <!-- Actions -->
@@ -227,16 +231,19 @@ select.sim-input option{background:var(--panel)}
             <button onclick="closeModal('deposit-modal')" style="background:transparent;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
           </div>
           <div style="font-size:11px;color:var(--text2);margin-bottom:20px;line-height:1.6">
-            Deposit ETH to your HedgeX balance. Trade without gas fees. Withdraw anytime.
+            Deposit ETH once. Trade gasless with no transaction fees. Withdraw to your wallet anytime.
           </div>
 
           <!-- HedgeX balance display -->
           <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
             <div>
-              <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">HedgeX balance</div>
+              <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Your HedgeX balance</div>
               <div style="font-size:22px;font-weight:700;color:var(--green)" id="modal-hx-balance">Ξ 0.0000</div>
             </div>
-            <div style="font-size:10px;color:var(--green);opacity:.7">No gas fees</div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:var(--green);opacity:.7">No gas fees</div>
+              <div style="font-size:9px;color:var(--green);opacity:.5;margin-top:2px">per bet</div>
+            </div>
           </div>
 
           <!-- Amount input -->
@@ -268,8 +275,8 @@ select.sim-input option{background:var(--panel)}
               <span style="color:var(--green)" id="dep-preview-after">—</span>
             </div>
             <div style="display:flex;justify-content:space-between">
-              <span style="color:var(--text2)">Destination</span>
-              <span style="color:var(--text2);font-size:10px">0x4433...7E48</span>
+              <span style="color:var(--text2)">Sent to</span>
+              <span style="color:var(--text2);font-size:10px">HedgeX contract · 0x3DC3...5603</span>
             </div>
           </div>
 
@@ -278,7 +285,7 @@ select.sim-input option{background:var(--panel)}
           </button>
 
           <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--text3)">
-            Funds held by HedgeX protocol · Withdraw anytime
+            Funds sent to HedgeX smart contract · Withdraw to your wallet anytime
           </div>
         </div>
       </div>
@@ -405,14 +412,14 @@ select.sim-input option{background:var(--panel)}
           <div style="font-size:10px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Trading mode</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
             <button id="mode-custodial" onclick="setTradingMode('custodial')"
-              style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-align:left;transition:all .15s">
-              <div style="font-weight:600;margin-bottom:2px">⚡ Gasless</div>
-              <div style="font-size:9px;opacity:.7">Deposit once · no gas per bet</div>
+              style="padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-align:left;transition:all .15s">
+              <div style="font-weight:700;margin-bottom:3px;font-size:11px">⚡ Custodial</div>
+              <div style="font-size:9px;opacity:.7;line-height:1.4">Deposit ETH to HedgeX<br>Trade gasless, no tx fees</div>
             </button>
             <button id="mode-noncustodial" onclick="setTradingMode('noncustodial')"
-              style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-align:left;transition:all .15s">
-              <div style="font-weight:600;margin-bottom:2px">🔗 On-chain</div>
-              <div style="font-size:9px;opacity:.7">Self-custody · MetaMask tx</div>
+              style="padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-align:left;transition:all .15s">
+              <div style="font-weight:700;margin-bottom:3px;font-size:11px">🔗 Non-custodial</div>
+              <div style="font-size:9px;opacity:.7;line-height:1.4">Use your own wallet<br>Full self-custody, on-chain</div>
             </button>
           </div>
           <div id="bet-mode-info" style="font-size:10px;color:var(--text2);padding:6px 10px;background:var(--bg3);border-radius:6px;line-height:1.6"></div>
@@ -512,7 +519,7 @@ select.sim-input option{background:var(--panel)}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
           <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Direction</div>
-          <select id="fs-dir" class="sim-input" style="width:100%" onchange="fullSim()">
+          <select id="fs-dir" class="sim-input" style="width:100%" onchange="updateFsEntryPrice();fullSim()">
             <option value="long-eth">LONG ETH</option>
             <option value="short-eth">SHORT ETH</option>
             <option value="long-btc">LONG BTC</option>
@@ -696,9 +703,10 @@ function updateModeUI() {
     noncBtn.style.color       = tradingMode === 'noncustodial' ? 'var(--blue)'     : 'var(--text2)';
   }
   if (betInfo) {
+    const hxBal = getHxBalance();
     betInfo.innerHTML = tradingMode === 'custodial'
-      ? `<span style="color:var(--green)">⚡ Gasless mode</span> — using HedgeX balance (<span style="color:var(--green)" id="bet-hx-bal">Ξ${getHxBalance().toFixed(4)}</span>) · <a href="#" onclick="openDeposit();return false" style="color:var(--green);text-decoration:underline">Deposit</a>`
-      : `<span style="color:var(--blue)">🔗 On-chain mode</span> — each bet sends a MetaMask transaction`;
+      ? `<span style="color:var(--green)">⚡ Custodial</span> — HedgeX balance: <span style="color:var(--green)" id="bet-hx-bal">Ξ${hxBal.toFixed(4)}</span> · ${hxBal < 0.001 ? '<a href="#" onclick="openDeposit();return false" style="color:var(--green);text-decoration:underline;font-weight:600">Deposit ETH →</a>' : 'Ready to bet!'}`
+      : `<span style="color:var(--blue)">🔗 Non-custodial</span> — your wallet signs each tx · full self-custody`;
   }
 }
 
@@ -1161,7 +1169,7 @@ function renderPointsView() {
 }
 
 // ── Custodial Balance System ─────────────────────────────────────────────────
-const HOUSE_ADDRESS = '0x443337ecA50Da7aDC44BE6553ADdC5aA07657E48';
+const HOUSE_ADDRESS = '0x3DC3e5C90Ee0DF7D3A2f1783C5fb0D14FfB544fd'; // Contract address — custodial deposits
 let walletBalance = 0;
 
 // HedgeX internal balance — stored per wallet in localStorage
@@ -1267,6 +1275,7 @@ async function sendDeposit() {
 
   try {
     const amountHex = '0x' + BigInt(Math.floor(amount * 1e18)).toString(16);
+    const explorer  = isTestnet ? 'https://sepolia.basescan.org' : 'https://basescan.org';
     const txHash = await window.ethereum.request({
       method: 'eth_sendTransaction',
       params: [{ from: walletAddress, to: HOUSE_ADDRESS, value: amountHex }]
@@ -1281,7 +1290,7 @@ async function sendDeposit() {
     awardPoints('Deposit made', Math.floor(amount * 1000));
 
     closeModal('deposit-modal');
-    showToast(`✅ Deposited Ξ${amount.toFixed(4)}! HedgeX balance: Ξ${newBal.toFixed(4)}`, true);
+    showToast(`✅ Deposited Ξ${amount.toFixed(4)}! HedgeX balance: Ξ${newBal.toFixed(4)} · <a href='${explorer}/tx/${txHash}' target='_blank' style='color:var(--green)'>View tx →</a>`, true);
     fetchBalance();
 
   } catch(e) {
@@ -1771,6 +1780,29 @@ async function fetchPrices() {
     btcEl.style.color = btc >= lastBtc && lastBtc !== 0 ? 'var(--green)' : 'var(--red)';
     lastEth = eth;
     lastBtc = btc;
+
+    // Update all entry price inputs to current price
+    const ethRound = Math.round(eth);
+    const btcRound = Math.round(btc);
+
+    // Simulator tab entry
+    const simEntry = document.getElementById('sim-entry');
+    if (simEntry) simEntry.value = ethRound;
+
+    // Full simulator entry
+    const fsEntry = document.getElementById('fs-entry');
+    if (fsEntry) {
+      const dir = document.getElementById('fs-dir')?.value || 'long-eth';
+      fsEntry.value = dir.includes('btc') ? btcRound : ethRound;
+    }
+
+    // Hedge chart entry
+    const hcEntry = document.getElementById('hc-entry');
+    if (hcEntry) hcEntry.value = ethRound;
+
+    // Refresh sims with new price
+    runSim();
+
   } catch(e) {
     ethEl.textContent = 'Loading...';
     btcEl.textContent = 'Loading...';
@@ -1873,10 +1905,12 @@ let chartMode = 'long-eth';
 
 function setChartPreset(p) {
   chartMode = p;
+  const ethNow = lastEth || 2176;
+  const btcNow = lastBtc || 71274;
   const presets = {
-    'long-eth':  {entry:2176,  size:1,   hedge:0.05,  target:2300},
-    'short-eth': {entry:2176,  size:1,   hedge:0.05,  target:2000},
-    'long-btc':  {entry:71274, size:0.1, hedge:0.002, target:75000}
+    'long-eth':  {entry:Math.round(ethNow), size:1,   hedge:0.05,  target:Math.round(ethNow*1.05)},
+    'short-eth': {entry:Math.round(ethNow), size:1,   hedge:0.05,  target:Math.round(ethNow*0.95)},
+    'long-btc':  {entry:Math.round(btcNow), size:0.1, hedge:0.002, target:Math.round(btcNow*1.05)}
   };
   const e = presets[p];
   document.getElementById('hc-entry').value  = e.entry;
@@ -2095,6 +2129,13 @@ function showView(view, btn) {
 }
 
 // ── Full Simulator ────────────────────────────────────────────────────────────
+function updateFsEntryPrice() {
+  const dir = document.getElementById('fs-dir')?.value || 'long-eth';
+  const entry = document.getElementById('fs-entry');
+  if (!entry) return;
+  const price = dir.includes('btc') ? Math.round(lastBtc || 71274) : Math.round(lastEth || 2176);
+  entry.value = price;
+}
 function fullSim() {
   const dir    = document.getElementById('fs-dir')?.value || 'long-eth';
   const size   = parseFloat(document.getElementById('fs-size')?.value) || 1;
