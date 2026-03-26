@@ -197,6 +197,15 @@ select.sim-input option{background:var(--panel)}
       <button class="tab" onclick="filterMarkets('ETH',this)">ETH</button>
       <button class="tab" onclick="filterMarkets('BTC',this)">BTC</button>
     </div>
+    <div class="tabs" style="margin-top:-12px">
+      <button class="tab active" onclick="filterTime('all',this)">All</button>
+      <button class="tab" onclick="filterTime('5m',this)">5m</button>
+      <button class="tab" onclick="filterTime('15m',this)">15m</button>
+      <button class="tab" onclick="filterTime('1h',this)">1h</button>
+      <button class="tab" onclick="filterTime('1d',this)">Daily</button>
+      <button class="tab" onclick="filterTime('1w',this)">Weekly</button>
+      <button class="tab" onclick="filterTime('1mo',this)">Monthly</button>
+    </div>
 
     <div class="markets-list" id="markets-list"></div>
 
@@ -432,15 +441,72 @@ let MARKETS = [];
 let selectedMarket = null;
 let currentFilter = 'all';
 
-// Fallback markets if Polymarket API fails
-const FALLBACK_MARKETS = [
-  { id:0, question:"Will ETH be above $2,500 by end of this week?", asset:"ETH", targetPrice:2500, yesPool:3.2, noPool:2.1, closes:"4d 12h", polyId:null },
-  { id:1, question:"Will BTC hold above $70,000 through end of March?", asset:"BTC", targetPrice:70000, yesPool:4.8, noPool:3.4, closes:"5d 6h", polyId:null },
-  { id:2, question:"Will ETH drop below $2,000 this week?", asset:"ETH", targetPrice:2000, yesPool:1.2, noPool:5.8, closes:"4d 12h", polyId:null },
-  { id:3, question:"Will BTC reach $75,000 before April?", asset:"BTC", targetPrice:75000, yesPool:3.6, noPool:4.2, closes:"5d 6h", polyId:null },
-  { id:4, question:"Will ETH outperform BTC this week?", asset:"ETH", targetPrice:2300, yesPool:2.9, noPool:2.7, closes:"4d 12h", polyId:null },
-  { id:5, question:"Will BTC fall below $65,000 this week?", asset:"BTC", targetPrice:65000, yesPool:1.4, noPool:6.1, closes:"4d 18h", polyId:null }
-];
+// Auto-generate time-based markets from live prices
+function generateMarkets(ethPrice, btcPrice) {
+  const e = Math.round(ethPrice);
+  const b = Math.round(btcPrice);
+
+  // Target prices: +/- 1%, 2%, 5% from current
+  const ep1 = Math.round(e * 1.01);
+  const em1 = Math.round(e * 0.99);
+  const ep2 = Math.round(e * 1.02);
+  const em2 = Math.round(e * 0.98);
+  const ep5 = Math.round(e * 1.05);
+  const em5 = Math.round(e * 0.95);
+
+  const bp1 = Math.round(b * 1.01);
+  const bm1 = Math.round(b * 0.99);
+  const bp2 = Math.round(b * 1.02);
+  const bm2 = Math.round(b * 0.98);
+  const bp5 = Math.round(b * 1.05);
+  const bm5 = Math.round(b * 0.95);
+
+  // Round to nice numbers
+  const rnd = (n, r) => Math.round(n/r)*r;
+  const eNice = rnd(e, 10);
+  const bNice = rnd(b, 500);
+
+  return [
+    // ── 5 MINUTE ──
+    { id:0,  question:`Will ETH be above $${ep1.toLocaleString()} in the next 5 minutes?`, asset:"ETH", targetPrice:ep1, yesPool:1.2, noPool:1.0, closes:"5m", timeframe:"5m" },
+    { id:1,  question:`Will BTC be above $${bp1.toLocaleString()} in the next 5 minutes?`, asset:"BTC", targetPrice:bp1, yesPool:1.1, noPool:1.3, closes:"5m", timeframe:"5m" },
+    { id:2,  question:`Will ETH drop below $${em1.toLocaleString()} in the next 5 minutes?`, asset:"ETH", targetPrice:em1, yesPool:0.9, noPool:1.4, closes:"5m", timeframe:"5m" },
+    { id:3,  question:`Will BTC drop below $${bm1.toLocaleString()} in the next 5 minutes?`, asset:"BTC", targetPrice:bm1, yesPool:0.8, noPool:1.5, closes:"5m", timeframe:"5m" },
+
+    // ── 15 MINUTE ──
+    { id:4,  question:`Will ETH be above $${ep2.toLocaleString()} in the next 15 minutes?`, asset:"ETH", targetPrice:ep2, yesPool:1.8, noPool:1.5, closes:"15m", timeframe:"15m" },
+    { id:5,  question:`Will BTC be above $${bp2.toLocaleString()} in the next 15 minutes?`, asset:"BTC", targetPrice:bp2, yesPool:2.1, noPool:1.7, closes:"15m", timeframe:"15m" },
+    { id:6,  question:`Will ETH drop below $${em2.toLocaleString()} in the next 15 minutes?`, asset:"ETH", targetPrice:em2, yesPool:1.0, noPool:2.2, closes:"15m", timeframe:"15m" },
+    { id:7,  question:`Will BTC drop below $${bm2.toLocaleString()} in the next 15 minutes?`, asset:"BTC", targetPrice:bm2, yesPool:1.1, noPool:2.0, closes:"15m", timeframe:"15m" },
+
+    // ── 1 HOUR ──
+    { id:8,  question:`Will ETH be above $${rnd(ep2,5).toLocaleString()} in the next 1 hour?`, asset:"ETH", targetPrice:rnd(ep2,5), yesPool:2.4, noPool:2.0, closes:"1h", timeframe:"1h" },
+    { id:9,  question:`Will BTC be above $${rnd(bp2,100).toLocaleString()} in the next 1 hour?`, asset:"BTC", targetPrice:rnd(bp2,100), yesPool:3.1, noPool:2.5, closes:"1h", timeframe:"1h" },
+    { id:10, question:`Will ETH drop below $${rnd(em2,5).toLocaleString()} in the next 1 hour?`, asset:"ETH", targetPrice:rnd(em2,5), yesPool:1.5, noPool:3.2, closes:"1h", timeframe:"1h" },
+    { id:11, question:`Will BTC drop below $${rnd(bm2,100).toLocaleString()} in the next 1 hour?`, asset:"BTC", targetPrice:rnd(bm2,100), yesPool:1.8, noPool:2.9, closes:"1h", timeframe:"1h" },
+
+    // ── DAILY ──
+    { id:12, question:`Will ETH be above $${rnd(ep5,10).toLocaleString()} by end of today?`, asset:"ETH", targetPrice:rnd(ep5,10), yesPool:3.2, noPool:2.8, closes:"24h", timeframe:"1d" },
+    { id:13, question:`Will BTC be above $${rnd(bp5,500).toLocaleString()} by end of today?`, asset:"BTC", targetPrice:rnd(bp5,500), yesPool:4.1, noPool:3.2, closes:"24h", timeframe:"1d" },
+    { id:14, question:`Will ETH drop below $${rnd(em5,10).toLocaleString()} today?`, asset:"ETH", targetPrice:rnd(em5,10), yesPool:1.4, noPool:4.8, closes:"24h", timeframe:"1d" },
+    { id:15, question:`Will BTC drop below $${rnd(bm5,500).toLocaleString()} today?`, asset:"BTC", targetPrice:rnd(bm5,500), yesPool:1.6, noPool:4.5, closes:"24h", timeframe:"1d" },
+
+    // ── WEEKLY ──
+    { id:16, question:`Will ETH be above $${rnd(e*1.08,50).toLocaleString()} this week?`, asset:"ETH", targetPrice:rnd(e*1.08,50), yesPool:4.2, noPool:3.1, closes:"7d", timeframe:"1w" },
+    { id:17, question:`Will BTC be above $${rnd(b*1.08,1000).toLocaleString()} this week?`, asset:"BTC", targetPrice:rnd(b*1.08,1000), yesPool:5.8, noPool:4.2, closes:"7d", timeframe:"1w" },
+    { id:18, question:`Will ETH drop below $${rnd(e*0.92,50).toLocaleString()} this week?`, asset:"ETH", targetPrice:rnd(e*0.92,50), yesPool:1.8, noPool:5.6, closes:"7d", timeframe:"1w" },
+    { id:19, question:`Will BTC drop below $${rnd(b*0.92,1000).toLocaleString()} this week?`, asset:"BTC", targetPrice:rnd(b*0.92,1000), yesPool:2.1, noPool:5.9, closes:"7d", timeframe:"1w" },
+
+    // ── MONTHLY ──
+    { id:20, question:`Will ETH be above $${rnd(e*1.20,100).toLocaleString()} this month?`, asset:"ETH", targetPrice:rnd(e*1.20,100), yesPool:5.4, noPool:4.8, closes:"30d", timeframe:"1mo" },
+    { id:21, question:`Will BTC be above $${rnd(b*1.20,2000).toLocaleString()} this month?`, asset:"BTC", targetPrice:rnd(b*1.20,2000), yesPool:6.2, noPool:5.1, closes:"30d", timeframe:"1mo" },
+    { id:22, question:`Will ETH drop below $${rnd(e*0.80,100).toLocaleString()} this month?`, asset:"ETH", targetPrice:rnd(e*0.80,100), yesPool:1.2, noPool:7.8, closes:"30d", timeframe:"1mo" },
+    { id:23, question:`Will BTC drop below $${rnd(b*0.80,2000).toLocaleString()} this month?`, asset:"BTC", targetPrice:rnd(b*0.80,2000), yesPool:1.5, noPool:7.2, closes:"30d", timeframe:"1mo" },
+  ];
+}
+
+// Fallback markets if prices not loaded yet
+const FALLBACK_MARKETS = generateMarkets(2176, 71274);
 
 // Detect asset from question text
 function detectAsset(question) {
@@ -464,70 +530,27 @@ function formatTimeLeft(endDateStr) {
   return `${hours}h`;
 }
 
-// Fetch real markets from Polymarket
+// Fetch live prices then generate time-based markets
 async function fetchPolymarkets() {
   const list = document.getElementById('markets-list');
-  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);font-size:12px">Loading live markets from Polymarket...</div>';
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);font-size:12px">Loading live prices and generating markets...</div>';
 
   try {
-    // Polymarket CLOB API — fetch active crypto markets
-    const res = await fetch(
-      'https://clob.polymarket.com/markets?active=true&closed=false&limit=30',
-      { headers: { 'Accept': 'application/json' } }
-    );
-
-    if (!res.ok) throw new Error('API error');
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd');
+    if (!res.ok) throw new Error('Price API error');
     const data = await res.json();
+    const ethPrice = data.ethereum.usd;
+    const btcPrice = data.bitcoin.usd;
 
-    // Filter strictly for BTC/ETH price prediction markets only
-    const strictKeywords = ['bitcoin price','btc price','ethereum price','eth price',
-      'will btc','will eth','will bitcoin','will ethereum',
-      'btc above','btc below','eth above','eth below',
-      'bitcoin above','bitcoin below','ethereum above','ethereum below',
-      'btc reach','eth reach','bitcoin reach','ethereum reach',
-      'btc hit','eth hit','bitcoin hit','ethereum hit',
-      'btc end','eth end','btc by','eth by'];
-    const cryptoMarkets = (data.data || data).filter(m => {
-      const q = (m.question || m.title || '').toLowerCase();
-      return strictKeywords.some(k => q.includes(k));
-    }).slice(0, 8);
-
-    if (cryptoMarkets.length === 0) throw new Error('No crypto markets found');
-
-    // Map to HedgeX format
-    MARKETS = cryptoMarkets.map((m, i) => {
-      const question = m.question || m.title || 'Unknown market';
-      const asset = detectAsset(question);
-      const tokens = m.tokens || [];
-      const yesToken = tokens.find(t => t.outcome === 'Yes') || tokens[0];
-      const noToken = tokens.find(t => t.outcome === 'No') || tokens[1];
-      const yesPrice = parseFloat(yesToken?.price || 0.5);
-      const totalVol = parseFloat(m.volume || m.volumeNum || 10);
-      const yesPool = +(yesPrice * totalVol / 1000).toFixed(2) || 2.0;
-      const noPool = +((1 - yesPrice) * totalVol / 1000).toFixed(2) || 2.0;
-
-      return {
-        id: i,
-        question,
-        asset,
-        targetPrice: 0,
-        yesPool: Math.max(0.5, yesPool),
-        noPool: Math.max(0.5, noPool),
-        closes: formatTimeLeft(m.endDate || m.end_date),
-        polyId: m.conditionId || m.id,
-        polyUrl: `https://polymarket.com/event/${m.slug || ''}`,
-        volume: m.volume || '0'
-      };
-    });
-
+    MARKETS = generateMarkets(ethPrice, btcPrice);
     renderMarkets();
-    showToast(`✅ Loaded ${MARKETS.length} live markets from Polymarket`, true);
+    showToast(`✅ Markets generated from live prices: ETH $${Math.round(ethPrice).toLocaleString()} · BTC $${Math.round(btcPrice).toLocaleString()}`, true);
 
   } catch(err) {
-    console.log('Polymarket API failed, using fallback:', err.message);
+    console.log('Price fetch failed, using fallback:', err.message);
     MARKETS = FALLBACK_MARKETS;
     renderMarkets();
-    showToast('Using local markets (Polymarket API unavailable)', false);
+    showToast('Using estimated prices for markets', false);
   }
 }
 
@@ -539,7 +562,8 @@ function getOdds(m) {
 
 function renderMarkets() {
   const list = document.getElementById('markets-list');
-  const filtered = currentFilter === 'all' ? MARKETS : MARKETS.filter(m => m.asset === currentFilter);
+  let filtered = currentFilter === 'all' ? MARKETS : MARKETS.filter(m => m.asset === currentFilter);
+  if (currentTimeframe !== 'all') filtered = filtered.filter(m => m.timeframe === currentTimeframe);
 
   if (filtered.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);font-size:12px">No markets found for this filter.</div>';
@@ -551,11 +575,14 @@ function renderMarkets() {
     const total = (m.yesPool + m.noPool).toFixed(2);
     const sel = selectedMarket?.id === m.id ? 'selected' : '';
     const polyBadge = m.polyId ? `<span style="font-size:9px;background:var(--purple-dim);border:1px solid var(--purple);border-radius:4px;padding:1px 6px;color:var(--purple)">Polymarket</span>` : '';
+    const tfColors = {'5m':'var(--red)','15m':'var(--amber)','1h':'var(--blue)','1d':'var(--green)','1w':'var(--purple)','1mo':'var(--teal,#00B8CC)'};
+    const tfBadge = m.timeframe ? `<span style="font-size:9px;background:var(--bg3);border:1px solid ${tfColors[m.timeframe]||'var(--border)'};border-radius:4px;padding:1px 6px;color:${tfColors[m.timeframe]||'var(--text2)'}">${m.timeframe}</span>` : '';
     return `
     <div class="market-card ${sel}" onclick="selectMarket(${m.id})">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div style="display:flex;gap:6px;align-items:center">
           <span class="asset-tag">${m.asset}</span>
+          ${tfBadge}
           ${polyBadge}
         </div>
         <span class="timer">${m.closes} left</span>
@@ -653,12 +680,22 @@ async function placeBet(isYes) {
   }
 }
 
+let currentTimeframe = 'all';
+
 function filterMarkets(f, btn) {
   currentFilter = f;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  // Only deactivate tabs in the same row
+  btn.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   if (MARKETS.length > 0) renderMarkets();
   else fetchPolymarkets();
+}
+
+function filterTime(tf, btn) {
+  currentTimeframe = tf;
+  btn.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (MARKETS.length > 0) renderMarkets();
 }
 
 // ── Hedge Simulator ──────────────────────────────────────────────────────────
