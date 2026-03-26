@@ -663,20 +663,32 @@ function autoHedge() {
   document.getElementById('hedge-suggestion-area').scrollIntoView({behavior:'smooth'});
 }
 
-// Live price ticks
-function tickPrices() {
+// Live prices from CoinGecko API
+let lastEth = 0, lastBtc = 0;
+
+async function fetchPrices() {
   const ethEl = document.getElementById('eth-price');
   const btcEl = document.getElementById('btc-price');
-  let eth = 3241, btc = 98400;
-  setInterval(() => {
-    const prevEth = eth, prevBtc = btc;
-    eth += (Math.random() - 0.5) * 8;
-    btc += (Math.random() - 0.5) * 200;
-    ethEl.textContent = `$${Math.round(eth).toLocaleString()}`;
-    btcEl.textContent = `$${Math.round(btc).toLocaleString()}`;
-    ethEl.style.color = eth >= prevEth ? 'var(--green)' : 'var(--red)';
-    btcEl.style.color = btc >= prevBtc ? 'var(--green)' : 'var(--red)';
-  }, 2000);
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd');
+    const data = await res.json();
+    const eth = data.ethereum.usd;
+    const btc = data.bitcoin.usd;
+    ethEl.textContent = `$${eth.toLocaleString()}`;
+    btcEl.textContent = `$${btc.toLocaleString()}`;
+    ethEl.style.color = eth >= lastEth && lastEth !== 0 ? 'var(--green)' : 'var(--red)';
+    btcEl.style.color = btc >= lastBtc && lastBtc !== 0 ? 'var(--green)' : 'var(--red)';
+    lastEth = eth;
+    lastBtc = btc;
+  } catch(e) {
+    ethEl.textContent = 'Loading...';
+    btcEl.textContent = 'Loading...';
+  }
+}
+
+function tickPrices() {
+  fetchPrices();
+  setInterval(fetchPrices, 30000);
 }
 
 // Auto-connect if already authorized
